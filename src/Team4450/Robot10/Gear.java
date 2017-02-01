@@ -21,6 +21,11 @@ public class Gear {
 		valve = new ValveDA(0); //FIXME Get correct IDs
 	}
 	
+	public void dispose() {
+		if (intakeMotor != null) intakeMotor.delete();
+		if (valve != null) valve.dispose();
+	}
+	
 	public void startIntake() {
 		if (!intaking) {
 			intakeMotor.set(INTAKE_SPEED);
