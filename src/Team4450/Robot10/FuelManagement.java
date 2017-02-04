@@ -4,7 +4,7 @@ import com.ctre.CANTalon;
 
 import Team4450.Lib.Util;
 
-public class FuelImportExport {
+public class FuelManagement {
 	
 	Robot robot;
 	CANTalon intakeMotor, shooterMotor1, shooterMotor2;
@@ -14,7 +14,7 @@ public class FuelImportExport {
 	private boolean shooting = false;
 	private boolean intaking = false;
 	
-	public FuelImportExport(Robot robot) {
+	public FuelManagement(Robot robot) {
 		this.robot = robot;
 		robot.InitializeCANTalon(intakeMotor = new CANTalon(0)); //FIXME Get correct ID number
 		robot.InitializeCANTalon(shooterMotor1 = new CANTalon(1)); //FIXME Get correct ID number

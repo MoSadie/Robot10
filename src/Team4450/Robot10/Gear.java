@@ -11,7 +11,8 @@ public class Gear {
 	CANTalon intakeMotor;
 	ValveDA valve;
 	
-	private boolean intaking = false;
+	enum STATES { EJECT, STOP, INTAKE };
+	private STATES state;
 	
 	static final double INTAKE_SPEED = 0.5;
 	
@@ -27,18 +28,29 @@ public class Gear {
 	}
 	
 	public void startIntake() {
-		if (!intaking) {
+		if (state != STATES.INTAKE) {
 			intakeMotor.set(INTAKE_SPEED);
+			state = STATES.INTAKE;
 		} else {
 			Util.consoleLog("Tried to startIntake while already intaking!");
 		}
 	}
 	
 	public void stopIntake() {
-		if (intaking) {
+		if (state != STATES.STOP) {
 			intakeMotor.set(0);
+			state = STATES.STOP;
 		} else {
-			Util.consoleLog("Tried to stopIntake while not intaking!");
+			Util.consoleLog("Tried to stopIntake while stopped!");
+		}
+	}
+	
+	public void reverseIntake() {
+		if (state != STATES.EJECT) {
+			intakeMotor.set(-INTAKE_SPEED);
+			state = STATES.EJECT;
+		} else {
+			Util.consoleLog("Tried to reverseIntake while already ejecting!");
 		}
 	}
 	
