@@ -12,7 +12,7 @@ public class Gear {
 	ValveDA valve;
 	
 	enum STATES { EJECT, STOP, INTAKE };
-	private STATES state;
+	private STATES state = STATES.STOP;
 	
 	static final double INTAKE_SPEED = 0.5;
 	

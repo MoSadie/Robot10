@@ -17,9 +17,18 @@ public class Climber {
 		this.teleop = teleop;
 	}
 	
+	public void dispose() {
+		ptoValve.dispose();
+	}
+	
 	public void prepareClimb() {
-		
+		ptoValve.SetA(); //TODO Determine correct side to trigger.
 		preparedToClimb = true;
+	}
+	
+	public void cancelClimb() {
+		ptoValve.SetB(); //TODO Determine correct side to trigger.
+		preparedToClimb = false;
 	}
 	
 	public void climb(double value) {
