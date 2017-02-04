@@ -6,15 +6,13 @@ import Team4450.Lib.ValveDA;
 public class Climber {
 	
 	private final Robot robot;
-	private final Teleop teleop;
 	
 	ValveDA ptoValve = new ValveDA(0); //FIXME Get correct ID number
 	
 	private boolean preparedToClimb = false;
 	
-	public Climber(Robot robot, Teleop teleop) {
+	public Climber(Robot robot) {
 		this.robot = robot;
-		this.teleop = teleop;
 	}
 	
 	public void dispose() {

@@ -7,7 +7,7 @@ import Team4450.Lib.ValveDA;
 
 public class Gear {
 	
-	Robot robot;
+	private final Robot robot;
 	CANTalon intakeMotor;
 	ValveDA valve;
 	

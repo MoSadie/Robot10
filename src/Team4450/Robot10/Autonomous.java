@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Autonomous
 {
 	private final Robot	robot;
-	private final int	program = (int) SmartDashboard.getNumber("AutoProgramSelect");
+	private final int	program = (int) SmartDashboard.getNumber("AutoProgramSelect",0);
 	
 	// encoder is plugged into dio port 2 - orange=+5v blue=signal, dio port 3 black=gnd yellow=signal. 
 	private Encoder		encoder = new Encoder(1, 2, true, EncodingType.k4X);

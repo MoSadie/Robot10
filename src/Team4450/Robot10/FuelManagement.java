@@ -6,7 +6,7 @@ import Team4450.Lib.Util;
 
 public class FuelManagement {
 	
-	Robot robot;
+	private final Robot robot;
 	CANTalon intakeMotor, shooterMotor1, shooterMotor2;
 	static final double SHOOTER_POWER = 0.75; //TODO Find correct value
 	static final double INTAKE_POWER = 0.76; //TODO Find correct value
@@ -19,7 +19,7 @@ public class FuelManagement {
 		robot.InitializeCANTalon(intakeMotor = new CANTalon(0)); //FIXME Get correct ID number
 		robot.InitializeCANTalon(shooterMotor1 = new CANTalon(1)); //FIXME Get correct ID number
 		robot.InitializeCANTalon(shooterMotor2 = new CANTalon(2)); //FIXME Get correct ID number
-		shooterMotor2.reverseOutput(true);
+		shooterMotor2.reverseOutput(true); //TODO Figure out what needs reversing.
 	}
 	
 	public void dispose() {
