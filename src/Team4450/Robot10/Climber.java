@@ -11,22 +11,44 @@ public class Climber {
 	
 	private boolean preparedToClimb = false;
 	
-	public Climber(Robot robot) {
+	private static Climber climber = null;
+	
+	public static Climber getInstance() {
+	if (climber == null) return null;
+	return climber;
+	}
+	
+	public static Climber getInstance(Robot robot) {
+		if (climber == null) {
+			climber = new Climber(robot);
+		}
+		return climber;
+	}
+	
+	private Climber(Robot robot) {
 		this.robot = robot;
 	}
 	
 	public void dispose() {
 		ptoValve.dispose();
+		climber = null;
 	}
 	
 	public void prepareClimb() {
-		ptoValve.SetA(); //TODO Determine correct side to trigger.
+		setPTO(true);
 		preparedToClimb = true;
 	}
 	
 	public void cancelClimb() {
-		ptoValve.SetB(); //TODO Determine correct side to trigger.
+		setPTO(false);
 		preparedToClimb = false;
+	}
+	
+	public void setPTO(boolean on) {
+		if (on) 
+			GearBox.getInstance(robot).setGear(GearBox.STATES.PTO);
+		else
+			GearBox.getInstance(robot).setGear(GearBox.STATES.HIGH); //TODO Determine which is faster.
 	}
 	
 	public void climb(double value) {

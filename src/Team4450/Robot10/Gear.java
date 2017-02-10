@@ -16,7 +16,20 @@ public class Gear {
 	
 	static final double INTAKE_SPEED = 0.5;
 	
-	public Gear(Robot robot) {
+	private static Gear gear = null;
+	public static Gear getInstance(Robot robot) {
+		if (gear == null) {
+			gear = new Gear(robot);
+		}
+		
+		return gear;
+	}
+	
+	public static Gear getInstance() {
+		return gear;
+	}
+	
+	private Gear(Robot robot) {
 		this.robot = robot;
 		robot.InitializeCANTalon(intakeMotor = new CANTalon(3)); //FIXME Get correct ID
 		valve = new ValveDA(0); //FIXME Get correct IDs
@@ -25,6 +38,7 @@ public class Gear {
 	public void dispose() {
 		if (intakeMotor != null) intakeMotor.delete();
 		if (valve != null) valve.dispose();
+		gear = null;
 	}
 	
 	public void startIntake() {

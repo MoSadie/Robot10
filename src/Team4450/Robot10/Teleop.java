@@ -22,8 +22,6 @@ class Teleop
 	private final Robot 		robot;
 	public  JoyStick			rightStick, leftStick, utilityStick;
 	public  LaunchPad			launchPad;
-	private final ValveDA		shifterValve = new ValveDA(2);
-	private final ValveDA		ptoValve = new ValveDA(0);
 	private boolean				ptoMode = false;
 	private boolean				autoTarget = false;
 
@@ -51,8 +49,6 @@ class Teleop
 		if (rightStick != null) rightStick.dispose();
 		if (utilityStick != null) utilityStick.dispose();
 		if (launchPad != null) launchPad.dispose();
-		if (shifterValve != null) shifterValve.dispose();
-		if (ptoValve != null) ptoValve.dispose();
 		//if (encoder != null) encoder.free();
 	}
 
@@ -199,20 +195,14 @@ class Teleop
 	{
 		Util.consoleLog();
 		
-		shifterValve.SetA();
-
-		SmartDashboard.putBoolean("Low", true);
-		SmartDashboard.putBoolean("High", false);
+		GearBox.getInstance(robot).setGear(GearBox.STATES.LOW);
 	}
 
 	void shifterHigh()
 	{
 		Util.consoleLog();
 		
-		shifterValve.SetB();
-
-		SmartDashboard.putBoolean("Low", false);
-		SmartDashboard.putBoolean("High", true);
+		GearBox.getInstance(robot).setGear(GearBox.STATES.HIGH);
 	}
 	
 	//--------------------------------------
@@ -220,22 +210,14 @@ class Teleop
 	{
 		Util.consoleLog();
 		
-		ptoMode = false;
-		
-		ptoValve.SetA();
-
-		SmartDashboard.putBoolean("PTO", false);
+		GearBox.getInstance(robot).setGear(GearBox.STATES.HIGH); //TODO Determine which gear is faster to switch to
 	}
 	
 	void ptoEnable()
 	{
 		Util.consoleLog();
 		
-		ptoValve.SetB();
-
-		ptoMode = true;
-		
-		SmartDashboard.putBoolean("PTO", true);
+		GearBox.getInstance(robot).setGear(GearBox.STATES.PTO);
 	}
 	
 	// Handle LaunchPad control events.
