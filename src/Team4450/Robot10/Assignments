@@ -1,0 +1,80 @@
+Port and Button Assignments.
+
+CAN Ports
+Port	Device			Description
+-----------------------------------------------------------------------------------
+1		CanTalon		Left front drive motor.
+2		CanTalon		Left rear drive motor.
+3		CanTalon		Right front drive motor.
+4		CanTalon		Right rear drive motor.
+5		CanTalon		Left slave drive motor (slaved to port 1).
+6		CanTalon		Right slave drive motor (slaved to port 3).
+
+PWM Ports
+Port	Device			Description
+-----------------------------------------------------------------------------------
+0		Talon			Ball pickup motor.
+1		Talon			Gear pickup motor.
+2		Talon			Shooter motor.
+
+PCM 0 Ports
+Port	Device			Description
+-----------------------------------------------------------------------------------
+0		ValveDA 0		A side high/low speed shifter. Set Low speed.
+1		ValveDA	0		B side high/low speed shifter. Set High speed.
+2		ValveDA 2		A side PTO shifter. Engage PTO.
+3		ValveDA 2		B side PTO shifter. Disendage PTO.
+4		ValveSA 1		Neutral shifter. Set neutral.
+
+
+Digital I/O Ports
+Port	Device			Description
+-----------------------------------------------------------------------------------
+
+
+Analog I/O Ports
+Port	Device			Description
+-----------------------------------------------------------------------------------
+0		Gyro			Center gyro for straight travel.
+
+
+Left Joystick
+Button Name				Function
+-----------------------------------------------------------------------------------
+Trigger					Toggle gearbox speed.
+
+
+Right Joystick
+Button Name				Function
+-----------------------------------------------------------------------------------
+Top_Left				Change camera view.
+
+
+Utility Joystick
+Button Name				Function
+-----------------------------------------------------------------------------------
+
+
+LaunchPad
+Button Name				Function
+-----------------------------------------------------------------------------------
+Rocker_Left_Back		Toggle CanTalong brake mode.
+Button_Blue				Toggle PTO mode.
+Button_Yellow			Change camera view.
+
+
+Dashboard Indicators/Controls
+Name					Type			Description
+-----------------------------------------------------------------------------------
+AutoTarget				boolean			True when targeting code is running.
+TargetLocked			boolean			True when targeting completed with target detected.
+BallPickupMotor			boolean			True when ball pickup motor is running.
+ShooterMotor			boolean			True when shooter motor is running.
+GearPickupMotor			boolean			True when gear pickup motor is running.
+GearPickupDown			boolean			True when gear pickup is in the down pos.
+LowSpeed				boolean			True when low speed is selected.
+Neutral					boolean			True when gearbox is in neutral
+Low						boolean			True when in low gear.
+High					boolean			True when in high gear.
+PTO						boolean			True when in PTO mode.
+		  
