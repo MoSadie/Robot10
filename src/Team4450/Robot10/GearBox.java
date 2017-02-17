@@ -7,8 +7,7 @@ public class GearBox {
 	
 	private static GearBox gearBox = null;
 	
-	private ValveSA valveCenter;
-	private ValveDA valveOuter, valvePTO;
+	private ValveDA valveOuter, valvePTO, valveCenter;
 	
 	public enum STATES { HIGH , LOW , PTO, NETURAL };
 	private STATES currentState;
@@ -22,7 +21,7 @@ public class GearBox {
 	
 	private GearBox() {
 		Util.consoleLog();
-		valveCenter = new ValveSA(2);
+		valveCenter = new ValveDA(2);
 		valveOuter = new ValveDA(0);
 		valvePTO = new ValveDA(4);
 	}
@@ -43,7 +42,7 @@ public class GearBox {
 				return;
 			case LOW:
 				SmartDashboard.putBoolean("LowSpeed", false);
-				valveCenter.Close();
+				valveCenter.SetB();
 				//Timer.delay(0.1); //TODO is needed?
 				valveOuter.SetB();
 				SmartDashboard.putBoolean("High", true);
@@ -68,7 +67,7 @@ public class GearBox {
 			case HIGH:
 				SmartDashboard.putBoolean("High", false);
 				valveOuter.SetA();
-				valveCenter.Open();
+				valveCenter.SetA();
 				SmartDashboard.putBoolean("LowSpeed", true);
 				break;
 			case LOW:
@@ -78,13 +77,13 @@ public class GearBox {
 				SmartDashboard.putBoolean("PTO", false);
 				valveOuter.SetA();
 				//Timer.delay(0.1); //TODO is needed?
-				valveCenter.Open();
+				valveCenter.SetA();
 				valvePTO.SetB();
 				SmartDashboard.putBoolean("LowSpeed", true);
 				break;
 			case NETURAL:
 				SmartDashboard.putBoolean("Netural", false);
-				valveCenter.Open();
+				valveCenter.SetA();
 				SmartDashboard.putBoolean("LowSpeed", true);
 				break;
 			default:
@@ -130,7 +129,7 @@ public class GearBox {
 				SmartDashboard.putBoolean("LowSpeed", false);
 				valveOuter.SetB();
 				//Timer.delay(0.1); //TODO is needed?
-				valveCenter.Open();
+				valveCenter.SetA();
 				SmartDashboard.putBoolean("Netural", true);
 				break;
 			case PTO:
@@ -152,7 +151,7 @@ public class GearBox {
 		currentState = gearToShiftTo;
 	}
 	
-	public boolean getPTO() {
+	public boolean isPTO() {
 		if (currentState == STATES.PTO) 
 			return true;
 		else

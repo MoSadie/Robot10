@@ -15,14 +15,12 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Relay;
 
 class Teleop
 {
 	private final Robot 		robot;
 	public  JoyStick			rightStick, leftStick, utilityStick;
 	public  LaunchPad			launchPad;
-	private boolean				ptoMode = false;
 	private boolean				autoTarget = false;
 
 	// Wheel encoder is plugged into dio port 1 - orange=+5v blue=signal, dio port 2 black=gnd yellow=signal. 
@@ -117,11 +115,11 @@ class Teleop
 			// Get joystick deflection and feed to robot drive object
 			// using calls to our JoyStick class.
 
-			if (ptoMode)
+			if (GearBox.getInstance().isPTO())
 			{
-				rightY = utilityStick.GetY();
+				leftY = utilityStick.GetY();
 
-				leftY = rightY;
+				rightY = 0;
 			} 
 			else
 			{
