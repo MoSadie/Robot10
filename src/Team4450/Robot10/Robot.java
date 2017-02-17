@@ -30,7 +30,7 @@ import com.ctre.CANTalon.*;
 
 public class Robot extends SampleRobot 
 {
-  static final String  	PROGRAM_NAME = "SWF10-02.10.17-01";
+  static final String  	PROGRAM_NAME = "SWF10-02.16.17-01";
 
   // Motor CAN ID/PWM port assignments (1=left-front, 2=left-rear, 3=right-front, 4=right-rear)
   CANTalon				LFCanTalon, LRCanTalon, RFCanTalon, RRCanTalon, LSlaveCanTalon, RSlaveCanTalon;
@@ -320,9 +320,11 @@ public class Robot extends SampleRobot
       
       // Configure slave CAN Talons to follow the front L & R Talons.
       LSlaveCanTalon.changeControlMode(TalonControlMode.Follower);
+      LSlaveCanTalon.reverseOutput(true);
       LSlaveCanTalon.set(LFCanTalon.getDeviceID());
 
       RSlaveCanTalon.changeControlMode(TalonControlMode.Follower);
+      RSlaveCanTalon.reverseOutput(true);
       RSlaveCanTalon.set(RFCanTalon.getDeviceID());
       
       // Turn on brake mode for CAN Talons.

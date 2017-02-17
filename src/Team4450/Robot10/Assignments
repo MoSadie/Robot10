@@ -18,13 +18,16 @@ Port	Device			Description
 2		Talon			Shooter motor.
 
 PCM 0 Ports
-Port	Device			Description
+Port	Device blk-pos	Description
 -----------------------------------------------------------------------------------
-0		ValveDA 0		A side high/low speed shifter. Set Low speed.
+0		ValveDA 0		A side high/low speed shifter. Set Low speed. On 3-pos cyl
+                                                       sets neutral. Must already
+                                                       be in high speed pos.
 1		ValveDA	0		B side high/low speed shifter. Set High speed.
 2		ValveDA 2		A side PTO shifter. Engage PTO.
 3		ValveDA 2		B side PTO shifter. Disendage PTO.
-4		ValveSA 1		Neutral shifter. Set neutral.
+4		ValveSA 3		Neutral shifter. On 3-pos cyl sets low speed when cyl is
+                                         already in high speed position.
 
 
 Digital I/O Ports
@@ -67,14 +70,11 @@ Dashboard Indicators/Controls
 Name					Type			Description
 -----------------------------------------------------------------------------------
 AutoTarget				boolean			True when targeting code is running.
-TargetLocked			boolean			True when targeting completed with target detected.
+TargetLocked			boolean			True when targeting completed with target
+                                        detected.
 BallPickupMotor			boolean			True when ball pickup motor is running.
 ShooterMotor			boolean			True when shooter motor is running.
 GearPickupMotor			boolean			True when gear pickup motor is running.
 GearPickupDown			boolean			True when gear pickup is in the down pos.
 LowSpeed				boolean			True when low speed is selected.
 Neutral					boolean			True when gearbox is in neutral
-Low						boolean			True when in low gear.
-High					boolean			True when in high gear.
-PTO						boolean			True when in PTO mode.
-		  

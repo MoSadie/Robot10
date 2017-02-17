@@ -1,13 +1,10 @@
 package Team4450.Robot10;
 
 import Team4450.Lib.Util;
-import Team4450.Lib.ValveDA;
 
 public class Climber {
 	
 	private final Robot robot;
-	
-	ValveDA ptoValve = new ValveDA(0); //FIXME Get correct ID number
 	
 	private boolean preparedToClimb = false;
 	
@@ -30,7 +27,6 @@ public class Climber {
 	}
 	
 	public void dispose() {
-		ptoValve.dispose();
 		climber = null;
 	}
 	
@@ -40,15 +36,15 @@ public class Climber {
 	}
 	
 	public void cancelClimb() {
-		setPTO(false);
 		preparedToClimb = false;
+		setPTO(false);
 	}
 	
 	public void setPTO(boolean on) {
 		if (on) 
-			GearBox.getInstance(robot).setGear(GearBox.STATES.PTO);
+			GearBox.getInstance().setGear(GearBox.STATES.PTO);
 		else
-			GearBox.getInstance(robot).setGear(GearBox.STATES.HIGH); //TODO Determine which is faster.
+			GearBox.getInstance().setGear(GearBox.STATES.HIGH); //TODO Determine which is faster.
 	}
 	
 	public void climb(double value) {

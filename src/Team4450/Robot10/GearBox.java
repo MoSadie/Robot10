@@ -5,40 +5,32 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class GearBox {
 	
-	private final Robot robot;
-	
 	private static GearBox gearBox = null;
 	
 	private ValveSA valveCenter;
 	private ValveDA valveOuter, valvePTO;
 	
-	private static final boolean THREE_STAGE = true;
-	
 	public enum STATES { HIGH , LOW , PTO, NETURAL };
 	private STATES currentState;
 	
-	public static GearBox getInstance(Robot robot) {
+	public static GearBox getInstance() {
 		if (gearBox == null) {
-			gearBox = new GearBox(robot);
+			gearBox = new GearBox();
 		}
 		return gearBox;
 	}
 	
-	public static GearBox getInstance() {
-		return gearBox;
-	}
-	
-	private GearBox(Robot robot) {
+	private GearBox() {
 		Util.consoleLog();
-		this.robot = robot;
-		valveCenter = new ValveSA(0); //FIXME Get correct ID number
-		valveOuter = new ValveDA(0); //FIXME Get correct ID number
-		valvePTO = new ValveDA(0); //FIXME Get correct ID number
+		valveCenter = new ValveSA(2);
+		valveOuter = new ValveDA(0);
+		valvePTO = new ValveDA(4);
 	}
 	
 	public void dispose() {
 		if (valveCenter != null) valveCenter.dispose();
 		if (valveOuter != null) valveOuter.dispose();
+		if (valvePTO != null) valvePTO.dispose();
 		gearBox = null;
 	}
 	
@@ -50,7 +42,7 @@ public class GearBox {
 				Util.consoleLog("Not changing gears! Trying to change to gear already set!");
 				return;
 			case LOW:
-				SmartDashboard.putBoolean("Low", false);
+				SmartDashboard.putBoolean("LowSpeed", false);
 				valveCenter.Close();
 				//Timer.delay(0.1); //TODO is needed?
 				valveOuter.SetB();
@@ -77,7 +69,7 @@ public class GearBox {
 				SmartDashboard.putBoolean("High", false);
 				valveOuter.SetA();
 				valveCenter.Open();
-				SmartDashboard.putBoolean("Low", true);
+				SmartDashboard.putBoolean("LowSpeed", true);
 				break;
 			case LOW:
 				Util.consoleLog("Not changing gears! Trying to change to gear already set!");
@@ -88,12 +80,12 @@ public class GearBox {
 				//Timer.delay(0.1); //TODO is needed?
 				valveCenter.Open();
 				valvePTO.SetB();
-				SmartDashboard.putBoolean("Low", true);
+				SmartDashboard.putBoolean("LowSpeed", true);
 				break;
 			case NETURAL:
 				SmartDashboard.putBoolean("Netural", false);
 				valveCenter.Open();
-				SmartDashboard.putBoolean("Low", true);
+				SmartDashboard.putBoolean("LowSpeed", true);
 				break;
 			default:
 				return;
@@ -108,7 +100,7 @@ public class GearBox {
 				SmartDashboard.putBoolean("PTO", true);
 				break;
 			case LOW:
-				SmartDashboard.putBoolean("Low", false);
+				SmartDashboard.putBoolean("LowSpeed", false);
 				valveOuter.SetB();
 				//Timer.delay(0.1); //TODO is needed?
 				valveOuter.SetA();
@@ -135,7 +127,7 @@ public class GearBox {
 				SmartDashboard.putBoolean("Netural", true);
 				break;
 			case LOW:
-				SmartDashboard.putBoolean("Low", false);
+				SmartDashboard.putBoolean("LowSpeed", false);
 				valveOuter.SetB();
 				//Timer.delay(0.1); //TODO is needed?
 				valveCenter.Open();

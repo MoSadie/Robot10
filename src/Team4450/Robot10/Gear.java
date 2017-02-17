@@ -1,14 +1,12 @@
 package Team4450.Robot10;
 
-import com.ctre.CANTalon;
-
 import Team4450.Lib.Util;
 import Team4450.Lib.ValveDA;
+import edu.wpi.first.wpilibj.Talon;
 
 public class Gear {
 	
-	private final Robot robot;
-	CANTalon intakeMotor;
+	Talon intakeMotor;
 	ValveDA valve;
 	
 	enum STATES { EJECT, STOP, INTAKE };
@@ -17,26 +15,21 @@ public class Gear {
 	static final double INTAKE_SPEED = 0.5;
 	
 	private static Gear gear = null;
-	public static Gear getInstance(Robot robot) {
+	public static Gear getInstance() {
 		if (gear == null) {
-			gear = new Gear(robot);
+			gear = new Gear();
 		}
 		
 		return gear;
 	}
 	
-	public static Gear getInstance() {
-		return gear;
-	}
-	
-	private Gear(Robot robot) {
-		this.robot = robot;
-		robot.InitializeCANTalon(intakeMotor = new CANTalon(3)); //FIXME Get correct ID
-		valve = new ValveDA(0); //FIXME Get correct IDs
+	private Gear() {
+		intakeMotor = new Talon(1);
+		valve = new ValveDA(0); //FIXME Get correct IDs OR IS THIS EVEN STILL HOW IT WORKS?
 	}
 	
 	public void dispose() {
-		if (intakeMotor != null) intakeMotor.delete();
+		if (intakeMotor != null) intakeMotor.free();
 		if (valve != null) valve.dispose();
 		gear = null;
 	}

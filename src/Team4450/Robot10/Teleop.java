@@ -189,20 +189,22 @@ class Teleop
 	}
 	
 	// Transmission control functions.
+	//For legacy code, should use GearBox class directly
 	
 	//--------------------------------------
+	
 	void shifterLow()
 	{
 		Util.consoleLog();
 		
-		GearBox.getInstance(robot).setGear(GearBox.STATES.LOW);
+		GearBox.getInstance().setGear(GearBox.STATES.LOW);
 	}
 
 	void shifterHigh()
 	{
 		Util.consoleLog();
 		
-		GearBox.getInstance(robot).setGear(GearBox.STATES.HIGH);
+		GearBox.getInstance().setGear(GearBox.STATES.HIGH);
 	}
 	
 	//--------------------------------------
@@ -210,14 +212,14 @@ class Teleop
 	{
 		Util.consoleLog();
 		
-		GearBox.getInstance(robot).setGear(GearBox.STATES.HIGH); //TODO Determine which gear is faster to switch to
+		GearBox.getInstance().setGear(GearBox.STATES.HIGH); //TODO Determine which gear is faster to switch to
 	}
 	
 	void ptoEnable()
 	{
 		Util.consoleLog();
 		
-		GearBox.getInstance(robot).setGear(GearBox.STATES.PTO);
+		GearBox.getInstance().setGear(GearBox.STATES.PTO);
 	}
 	
 	// Handle LaunchPad control events.
