@@ -44,7 +44,7 @@ public class Climber {
 		if (on) 
 			GearBox.getInstance().setGear(GearBox.STATES.PTO);
 		else
-			GearBox.getInstance().setGear(GearBox.STATES.HIGH); //TODO Determine which is faster.
+			GearBox.getInstance().setGear(GearBox.STATES.LOW);
 	}
 	
 	public void climb(double value) {

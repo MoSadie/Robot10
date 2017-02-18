@@ -64,8 +64,7 @@ class Teleop
 		
 		// Initial setting of air valves.
 
-		shifterLow();
-		ptoDisable();
+		GearBox.getInstance().reset();
 		
 		// Configure LaunchPad and Joystick event handlers.
 		
@@ -210,7 +209,7 @@ class Teleop
 	{
 		Util.consoleLog();
 		
-		GearBox.getInstance().setGear(GearBox.STATES.HIGH); //TODO Determine which gear is faster to switch to
+		GearBox.getInstance().setGear(GearBox.STATES.LOW);
 	}
 	
 	void ptoEnable()
