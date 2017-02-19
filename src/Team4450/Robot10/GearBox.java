@@ -1,7 +1,6 @@
 package Team4450.Robot10;
 
 import Team4450.Lib.*;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class GearBox {

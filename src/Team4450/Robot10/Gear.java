@@ -7,10 +7,13 @@ import edu.wpi.first.wpilibj.Talon;
 public class Gear {
 	
 	Talon intakeMotor;
-	ValveDA valve;
+	ValveDA wristValve, elevatorValve;
 	
 	enum STATES { EJECT, STOP, INTAKE };
 	private STATES state = STATES.STOP;
+	
+	enum ELEVATOR_STATES { HIGH, LOW };
+	private ELEVATOR_STATES elevator_state;
 	
 	static final double INTAKE_SPEED = 0.5;
 	
@@ -25,12 +28,20 @@ public class Gear {
 	
 	private Gear() {
 		intakeMotor = new Talon(1);
-		valve = new ValveDA(0); //FIXME Get correct IDs OR IS THIS EVEN STILL HOW IT WORKS?
+		wristValve = new ValveDA(1,0);
+		elevatorValve = new ValveDA(6);
+	}
+	
+	public void reset(){
+		intakeMotor.set(0);
+		state = STATES.STOP;
+		elevatorValve.SetA();
+		elevator_state = ELEVATOR_STATES.LOW;
 	}
 	
 	public void dispose() {
 		if (intakeMotor != null) intakeMotor.free();
-		if (valve != null) valve.dispose();
+		if (wristValve != null) wristValve.dispose();
 		gear = null;
 	}
 	
@@ -61,11 +72,41 @@ public class Gear {
 		}
 	}
 	
-	public void lowerHolder() {
-		valve.SetA(); //TODO Confirm this
+	public void setElevator(ELEVATOR_STATES stateToSetTo) {
+		switch (stateToSetTo) {
+		case LOW:
+			switch(elevator_state) {
+			case LOW:
+				Util.consoleLog("Not changing elevator state because already at " + elevator_state.toString() + " state!");
+				return;
+			case HIGH:
+				elevatorValve.SetB();
+				break;
+			}
+			break;
+			
+		case HIGH:
+			switch(elevator_state) {
+			case HIGH:
+				Util.consoleLog("Not changing elevator state because already at " + elevator_state.toString() + " state!");
+				return;
+				
+			case LOW:
+				elevatorValve.SetA();
+				break;
+			}
+			break;
+		}
+		elevator_state = stateToSetTo;
 	}
 	
-	public void raiseHolder() {
-		valve.SetB(); //TODO Confirm this
+	public void lowerWrist() {
+		wristValve.SetB();
+		startIntake();
+	}
+	
+	public void raiseWrist() {
+		wristValve.SetA();
+		stopIntake();
 	}
 }

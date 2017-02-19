@@ -231,10 +231,6 @@ class Teleop
 			
 			switch(control.id)
 			{
-				case BUTTON_YELLOW:
-					robot.cameraThread.ChangeCamera();
-    				break;
-    				
 				case BUTTON_BLUE:
     				if (launchPadEvent.control.latchedState)
     				{
@@ -246,9 +242,28 @@ class Teleop
 
     				break;
     				
-				case BUTTON_RED_RIGHT:
-					robot.navx.resetYaw();
+				case BUTTON_RED:
+					if (control.latchedState)
+						Gear.getInstance().lowerWrist();
+					else
+						Gear.getInstance().raiseWrist();
+					break;
+					
+				case BUTTON_BLUE_RIGHT:
+					Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.LOW);
+					break;
+					
+					
 				
+				case BUTTON_RED_RIGHT:
+					Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.HIGH);
+					break;
+					
+				case BUTTON_YELLOW:
+					robot.cameraThread.ChangeCamera(); //TODO Change if there is middle position.
+    				break;
+    				
+					
 				default:
 					break;
 			}
@@ -275,6 +290,9 @@ class Teleop
     	    			robot.SetCANTalonBrakeMode(true);	// brake
     				
     				break;
+    				
+	    		case ROCKER_LEFT_FRONT:
+	    			if (robot.cameraThread != null) robot.cameraThread.ChangeCamera();
     				
 				default:
 					break;
@@ -355,8 +373,22 @@ class Teleop
 			{
 				// Trigger starts shoot sequence.
 				case TRIGGER:
+					FuelManagement.getInstance().shoot();
     				break;
 				
+				case TOP_LEFT:
+					if (button.latchedState)
+						FuelManagement.getInstance().prepareToShoot();
+					else
+						FuelManagement.getInstance().endShoot();
+					break;
+					
+				case TOP_RIGHT:
+					if (button.latchedState)
+						FuelManagement.getInstance().intake();
+					else
+						FuelManagement.getInstance().stopIntake();
+    				
 				default:
 					break;
 			}
