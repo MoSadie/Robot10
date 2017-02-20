@@ -30,7 +30,7 @@ import com.ctre.CANTalon.*;
 
 public class Robot extends SampleRobot 
 {
-  static final String  	PROGRAM_NAME = "SWF10-02.17.17-11";
+  static final String  	PROGRAM_NAME = "SWF10-02.20.17-01";
 
   // Motor CAN ID/PWM port assignments (1=left-front, 2=left-rear, 3=right-front, 4=right-rear)
   CANTalon				LFCanTalon, LRCanTalon, RFCanTalon, RRCanTalon, LSlaveCanTalon, RSlaveCanTalon;

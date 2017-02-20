@@ -1,6 +1,8 @@
 package Team4450.Robot10;
 
 import Team4450.Lib.*;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class GearBox {
@@ -8,6 +10,8 @@ public class GearBox {
 	private static GearBox gearBox = null;
 	
 	private ValveDA valveOuter, valvePTO, valveCenter;
+	
+	private Encoder encoder = new Encoder(0,1,true, EncodingType.k4X);
 	
 	public enum STATES { HIGH , LOW , PTO, NETURAL };
 	private STATES currentState;
@@ -30,6 +34,7 @@ public class GearBox {
 		if (valveCenter != null) valveCenter.dispose();
 		if (valveOuter != null) valveOuter.dispose();
 		if (valvePTO != null) valvePTO.dispose();
+		if (encoder != null) encoder.free();
 		gearBox = null;
 	}
 	
@@ -169,5 +174,9 @@ public class GearBox {
 	
 	public STATES getCurrentState() {
 		return currentState;
+	}
+	
+	public Encoder getEncoder() {
+		return encoder;
 	}
 }

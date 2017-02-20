@@ -22,6 +22,7 @@ class Teleop
 	public  JoyStick			rightStick, leftStick, utilityStick;
 	public  LaunchPad			launchPad;
 	private boolean				autoTarget = false;
+	public boolean				invertDrive = false;
 
 	// Wheel encoder is plugged into dio port 1 - orange=+5v blue=signal, dio port 2 black=gnd yellow=signal. 
 	//private Encoder				encoder = new Encoder(1, 2, true, EncodingType.k4X);
@@ -119,7 +120,11 @@ class Teleop
 				leftY = utilityStick.GetY();
 
 				rightY = 0;
-			} 
+			}
+			else if (invertDrive) {
+				rightY = stickLogCorrection(-rightStick.GetY());	// fwd/back right
+    			leftY = stickLogCorrection(-leftStick.GetY());	// fwd/back left				
+			}
 			else
 			{
 				rightY = stickLogCorrection(rightStick.GetY());	// fwd/back right
@@ -250,13 +255,13 @@ class Teleop
 					break;
 					
 				case BUTTON_BLUE_RIGHT:
-					Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.LOW);
+					Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.DOWN);
 					break;
 					
 					
 				
 				case BUTTON_RED_RIGHT:
-					Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.HIGH);
+					Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.UP);
 					break;
 					
 				case BUTTON_YELLOW:

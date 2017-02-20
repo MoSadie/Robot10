@@ -1,50 +1,52 @@
 package Team4450.Robot10;
 
+import com.ctre.CANTalon;
+
 import Team4450.Lib.Util;
 import Team4450.Lib.ValveDA;
 import edu.wpi.first.wpilibj.Talon;
 
 public class Gear {
-	
-	Talon intakeMotor;
+
+	CANTalon intakeMotor;
 	ValveDA wristValve, elevatorValve;
-	
+
 	enum STATES { EJECT, STOP, INTAKE };
 	private STATES state = STATES.STOP;
-	
-	enum ELEVATOR_STATES { HIGH, LOW };
+
+	enum ELEVATOR_STATES { UP, DOWN };
 	private ELEVATOR_STATES elevator_state;
-	
+
 	static final double INTAKE_SPEED = 0.5;
-	
+
 	private static Gear gear = null;
 	public static Gear getInstance() {
 		if (gear == null) {
 			gear = new Gear();
 		}
-		
+
 		return gear;
 	}
-	
+
 	private Gear() {
-		intakeMotor = new Talon(1);
+		intakeMotor = new CANTalon(7);
 		wristValve = new ValveDA(1,0);
 		elevatorValve = new ValveDA(6);
 	}
-	
+
 	public void reset(){
 		intakeMotor.set(0);
 		state = STATES.STOP;
 		elevatorValve.SetA();
-		elevator_state = ELEVATOR_STATES.LOW;
+		elevator_state = ELEVATOR_STATES.DOWN;
 	}
-	
+
 	public void dispose() {
-		if (intakeMotor != null) intakeMotor.free();
+		if (intakeMotor != null) intakeMotor.delete();
 		if (wristValve != null) wristValve.dispose();
 		gear = null;
 	}
-	
+
 	public void startIntake() {
 		if (state != STATES.INTAKE) {
 			intakeMotor.set(INTAKE_SPEED);
@@ -53,7 +55,7 @@ public class Gear {
 			Util.consoleLog("Tried to startIntake while already intaking!");
 		}
 	}
-	
+
 	public void stopIntake() {
 		if (state != STATES.STOP) {
 			intakeMotor.set(0);
@@ -62,7 +64,7 @@ public class Gear {
 			Util.consoleLog("Tried to stopIntake while stopped!");
 		}
 	}
-	
+
 	public void reverseIntake() {
 		if (state != STATES.EJECT) {
 			intakeMotor.set(-INTAKE_SPEED);
@@ -71,27 +73,27 @@ public class Gear {
 			Util.consoleLog("Tried to reverseIntake while already ejecting!");
 		}
 	}
-	
+
 	public void setElevator(ELEVATOR_STATES stateToSetTo) {
 		switch (stateToSetTo) {
-		case LOW:
+		case DOWN:
 			switch(elevator_state) {
-			case LOW:
-				Util.consoleLog("Not changing elevator state because already at " + elevator_state.toString() + " state!");
+			case DOWN:
+				Util.consoleLog("Not changing elevator state because already at " + elevator_state.toString() + " position!");
 				return;
-			case HIGH:
+			case UP:
 				elevatorValve.SetB();
 				break;
 			}
 			break;
-			
-		case HIGH:
+
+		case UP:
 			switch(elevator_state) {
-			case HIGH:
-				Util.consoleLog("Not changing elevator state because already at " + elevator_state.toString() + " state!");
+			case UP:
+				Util.consoleLog("Not changing elevator state because already at " + elevator_state.toString() + " position!");
 				return;
-				
-			case LOW:
+
+			case DOWN:
 				elevatorValve.SetA();
 				break;
 			}
@@ -99,14 +101,35 @@ public class Gear {
 		}
 		elevator_state = stateToSetTo;
 	}
-	
+
 	public void lowerWrist() {
 		wristValve.SetB();
 		startIntake();
 	}
-	
+
 	public void raiseWrist() {
 		wristValve.SetA();
 		stopIntake();
+	}
+}
+
+class GearGrab extends Thread {
+	CANTalon intakeMotor;
+	private static final double TRIGGER_CURRENT = 12.1;
+	boolean finished = false;
+	GearGrab(CANTalon intakeMotor) {
+		setName("Grab Gear");
+		this.intakeMotor = intakeMotor;
+	}
+
+	public void run() {
+		finished = false;
+		intakeMotor.set(Gear.INTAKE_SPEED);
+		while (!isInterrupted() && !finished) {
+			if (intakeMotor.getOutputCurrent() >= TRIGGER_CURRENT) {
+				finished = true;
+			}
+		}
+		intakeMotor.set(0);
 	}
 }
