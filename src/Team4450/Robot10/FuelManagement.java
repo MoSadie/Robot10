@@ -8,7 +8,7 @@ public class FuelManagement {
 
 	Talon shooterMotor, feederMotor, indexerMotor;
 	Spark intakeMotor;
-	static final double SHOOTER_POWER = 0.50; //TODO Find tuned value
+	static final double SHOOTER_POWER = 1; //TODO Find tuned value
 	static final double FEED_POWER = 0.50; //TODO Find tuned value
 	static final double INTAKE_POWER = 0.50; //TODO Find tuned value
 	static final double INDEX_POWER = 0.50; //TODO Find tuned value
