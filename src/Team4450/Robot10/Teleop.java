@@ -73,11 +73,13 @@ class Teleop
 
 		LaunchPadControl lpControl = launchPad.AddControl(LaunchPadControlIDs.ROCKER_LEFT_BACK);
 		lpControl.controlType = LaunchPadControlTypes.SWITCH;
-
+		
+		LaunchPadControl lpControl2 = launchPad.AddControl(LaunchPadControlIDs.ROCKER_LEFT_FRONT);
+		lpControl2.controlType = LaunchPadControlTypes.SWITCH;
+		
 		launchPad.AddControl(LaunchPadControlIDs.BUTTON_YELLOW);
 		launchPad.AddControl(LaunchPadControlIDs.BUTTON_RED_RIGHT);
 		launchPad.AddControl(LaunchPadControlIDs.BUTTON_BLUE_RIGHT);
-		launchPad.AddControl(LaunchPadControlIDs.BUTTON_BLUE);
 		launchPad.AddControl(LaunchPadControlIDs.BUTTON_RED);
 		launchPad.addLaunchPadEventListener(new LaunchPadListener());
 		launchPad.Start();
@@ -384,13 +386,13 @@ class Teleop
 			// Trigger starts shoot sequence.
 			case TRIGGER:
 				if (FuelManagement.getInstance().getShooting())
-					FuelManagement.getInstance().shoot();
-				else
 					FuelManagement.getInstance().endShoot();
+				else if (FuelManagement.getInstance().getPreparedToShoot())
+					FuelManagement.getInstance().shoot();
 				break;
 
 			case TOP_LEFT:
-				if (!FuelManagement.getInstance().getShooting())
+				if (!FuelManagement.getInstance().getPreparedToShoot())
 					FuelManagement.getInstance().prepareToShoot();
 				else
 					FuelManagement.getInstance().endShoot();

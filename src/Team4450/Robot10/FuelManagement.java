@@ -3,6 +3,7 @@ package Team4450.Robot10;
 import Team4450.Lib.Util;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class FuelManagement {
 
@@ -13,6 +14,7 @@ public class FuelManagement {
 	static final double INTAKE_POWER = 0.50; //TODO Find tuned value
 	static final double INDEX_POWER = 0.50; //TODO Find tuned value
 
+	private boolean preparedToShoot = false;
 	private boolean shooting = false;
 	private boolean intaking = false;
 
@@ -40,18 +42,29 @@ public class FuelManagement {
 	}
 
 	public void prepareToShoot() {
-		if(!shooting) {
-			shooting = true;
-			shooterMotor.set(SHOOTER_POWER);
+		if(!preparedToShoot) {
+			if (!shooting) {
+				shooting = true;
+				shooterMotor.set(SHOOTER_POWER);
+				SmartDashboard.putBoolean("ShooterMotor", true);
+			} else {
+				Util.consoleLog("Attempted prepareToShoot while already shooting!");
+			}
 		} else {
-			Util.consoleLog("Attempted prepareToShoot while already shooting!");
+			Util.consoleLog("Attempted prepareToShoot while already prepared to shoot!!");
 		}
 	}
 
 	public void shoot() {
-		if (shooting) {
-			feederMotor.set(FEED_POWER);
-			indexerMotor.set(INDEX_POWER);
+		if (preparedToShoot) {
+			if (!shooting) {
+				shooting = true;
+				feederMotor.set(FEED_POWER);
+				indexerMotor.set(INDEX_POWER);
+				SmartDashboard.putBoolean("DispenserMotor", true);
+			} else {
+				Util.consoleLog("Attempted to shoot while already shooting!");
+			}
 		}
 		else {
 			Util.consoleLog("Attempted to shoot while not prepared!");
@@ -64,6 +77,9 @@ public class FuelManagement {
 			feederMotor.set(0);
 			indexerMotor.set(0);
 			shooting = false;
+			preparedToShoot = false;
+			SmartDashboard.putBoolean("ShooterMotor", false);
+			SmartDashboard.putBoolean("DispenserMotor", false);
 		} else {
 			Util.consoleLog("Attempted endShoot while not shooting!");
 		}
@@ -86,8 +102,12 @@ public class FuelManagement {
 			Util.consoleLog("Attempted stopIntake while not intaking!");
 		}
 	}
-	
+
 	public boolean getShooting() {
 		return shooting;
+	}
+
+	public boolean getPreparedToShoot() {
+		return preparedToShoot;
 	}
 }
