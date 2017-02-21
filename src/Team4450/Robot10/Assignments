@@ -17,7 +17,8 @@ Port	Device			Description
 -----------------------------------------------------------------------------------
 0		Spark			Ball pickup motor.
 1		Talon			Shooter motor.
-2		Talon			Shooter dispenser motor.
+2		Talon			Shooter feeder motor.
+3		Talon			Indexer.
 
 
 PCM 0 Ports

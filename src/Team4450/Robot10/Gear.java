@@ -38,7 +38,7 @@ public class Gear {
 		intakeMotor.set(0);
 		state = STATES.STOP;
 		elevatorValve.SetA();
-		elevator_state = ELEVATOR_STATES.DOWN;
+		elevator_state = ELEVATOR_STATES.UP;
 	}
 
 	public void dispose() {
