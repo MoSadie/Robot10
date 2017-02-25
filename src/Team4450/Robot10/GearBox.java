@@ -38,15 +38,19 @@ public class GearBox {
 		gearBox = null;
 	}
 	
+	void updateNetworkTables() {
+		SmartDashboard.putBoolean("Low", currentState == STATES.LOW);
+		SmartDashboard.putBoolean("High", currentState == STATES.HIGH);
+		SmartDashboard.putBoolean("PTO", currentState == STATES.PTO);
+	}
+	
 	public void reset() {
 		Util.consoleLog("Resetting to default state!");
 		valveCenter.SetA();
 		valveOuter.SetA();
 		valvePTO.SetB();
-		SmartDashboard.putBoolean("Low", true);
-		SmartDashboard.putBoolean("High", false);
-		SmartDashboard.putBoolean("PTO", false);
 		currentState = STATES.LOW;
+		updateNetworkTables();
 	}
 	
 	public void setGear(STATES gearToShiftTo) {
@@ -58,21 +62,15 @@ public class GearBox {
 				Util.consoleLog("Not changing gears! Trying to change to gear already set!");
 				return;
 			case LOW:
-				SmartDashboard.putBoolean("Low", false);
 				valveCenter.SetB();
 				valveOuter.SetB();
-				SmartDashboard.putBoolean("High", true);
 				break;
 			case PTO:
-				SmartDashboard.putBoolean("PTO", false);
 				valveOuter.SetB();
 				valvePTO.SetB();
-				SmartDashboard.putBoolean("High", true);
 				break;
 			case NETURAL:
-				SmartDashboard.putBoolean("Netural", false);
 				valveOuter.SetB();
-				SmartDashboard.putBoolean("High", true);
 				break;
 			default:
 				return;
@@ -81,25 +79,19 @@ public class GearBox {
 		case LOW:
 			switch (currentState) {
 			case HIGH:
-				SmartDashboard.putBoolean("High", false);
 				valveOuter.SetA();
 				valveCenter.SetA();
-				SmartDashboard.putBoolean("Low", true);
 				break;
 			case LOW:
 				Util.consoleLog("Not changing gears! Trying to change to gear already set!");
 				return;
 			case PTO:
-				SmartDashboard.putBoolean("PTO", false);
 				valveOuter.SetA();
 				valveCenter.SetA();
 				valvePTO.SetB();
-				SmartDashboard.putBoolean("Low", true);
 				break;
 			case NETURAL:
-				SmartDashboard.putBoolean("Netural", false);
 				valveCenter.SetA();
-				SmartDashboard.putBoolean("Low", true);
 				break;
 			default:
 				return;
@@ -108,26 +100,20 @@ public class GearBox {
 		case PTO:
 			switch (currentState) {
 			case HIGH:
-				SmartDashboard.putBoolean("High", false);
 				valveOuter.SetA();
 				valvePTO.SetA();
-				SmartDashboard.putBoolean("PTO", true);
 				break;
 			case LOW:
-				SmartDashboard.putBoolean("Low", false);
 				valveCenter.SetB();
 				valveOuter.SetB();
 				valveOuter.SetA();
 				valvePTO.SetA();
-				SmartDashboard.putBoolean("PTO", true);
 				break;
 			case PTO:
 				Util.consoleLog("Not changing gears! Trying to change to gear already set!");
 				return;
 			case NETURAL:
-				SmartDashboard.putBoolean("Netural", false);
 				valvePTO.SetA();
-				SmartDashboard.putBoolean("PTO", true);
 				break;
 			default:
 				return;
@@ -136,20 +122,15 @@ public class GearBox {
 		case NETURAL:
 			switch (currentState) {
 			case HIGH:
-				SmartDashboard.putBoolean("High", false);
 				valveOuter.SetA();
-				SmartDashboard.putBoolean("Netural", true);
 				break;
 			case LOW:
-				SmartDashboard.putBoolean("Low", false);
 				valveOuter.SetB();
 				valveCenter.SetA();
-				SmartDashboard.putBoolean("Netural", true);
 				break;
 			case PTO:
-				SmartDashboard.putBoolean("PTO", false);
 				valvePTO.SetB();
-				SmartDashboard.putBoolean("Netural",true);
+				break;
 			case NETURAL:
 				Util.consoleLog("Not changing gears! Trying to change to gear already set!");
 				return;
@@ -163,6 +144,7 @@ public class GearBox {
 		
 		}
 		currentState = gearToShiftTo;
+		updateNetworkTables();
 	}
 	
 	public boolean isPTO() {

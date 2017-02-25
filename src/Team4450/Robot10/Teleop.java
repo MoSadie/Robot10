@@ -73,10 +73,10 @@ class Teleop
 
 		LaunchPadControl lpControl = launchPad.AddControl(LaunchPadControlIDs.ROCKER_LEFT_BACK);
 		lpControl.controlType = LaunchPadControlTypes.SWITCH;
-		
+
 		LaunchPadControl lpControl2 = launchPad.AddControl(LaunchPadControlIDs.ROCKER_LEFT_FRONT);
 		lpControl2.controlType = LaunchPadControlTypes.SWITCH;
-		
+
 		launchPad.AddControl(LaunchPadControlIDs.BUTTON_YELLOW);
 		launchPad.AddControl(LaunchPadControlIDs.BUTTON_RED_RIGHT);
 		launchPad.AddControl(LaunchPadControlIDs.BUTTON_BLUE_RIGHT);
@@ -95,6 +95,8 @@ class Teleop
 		utilityStick = new JoyStick(robot.utilityStick, "UtilityStick", JoyStickButtonIDs.TRIGGER, this);
 		utilityStick.AddButton(JoyStickButtonIDs.TOP_LEFT);
 		utilityStick.AddButton(JoyStickButtonIDs.TOP_RIGHT);
+		utilityStick.AddButton(JoyStickButtonIDs.TOP_BACK);
+		utilityStick.AddButton(JoyStickButtonIDs.TOP_MIDDLE);
 		utilityStick.addJoyStickEventListener(new UtilityStickListener());
 		utilityStick.Start();
 
@@ -128,10 +130,10 @@ class Teleop
 
 				rightY = 0;
 			}
-			else if (invertDrive) {
-				rightY = stickLogCorrection(-rightStick.GetY());	// fwd/back right
-				leftY = stickLogCorrection(-leftStick.GetY());	// fwd/back left				
-			}
+			//else if (invertDrive) {
+			//	rightY = stickLogCorrection(-rightStick.GetY());	// fwd/back right
+			//	leftY = stickLogCorrection(-leftStick.GetY());	// fwd/back left				
+			//}
 			else
 			{
 				rightY = stickLogCorrection(rightStick.GetY());	// fwd/back right
@@ -256,9 +258,9 @@ class Teleop
 
 			case BUTTON_RED:
 				if (control.latchedState)
-					Gear.getInstance().lowerWrist();
+					Gear.getInstance().extendWrist();
 				else
-					Gear.getInstance().raiseWrist();
+					Gear.getInstance().retractWrist();
 				break;
 
 			case BUTTON_BLUE_RIGHT:
@@ -403,6 +405,37 @@ class Teleop
 					FuelManagement.getInstance().intake();
 				else
 					FuelManagement.getInstance().stopIntake();
+				break;
+
+			case TOP_MIDDLE:
+				switch(Gear.getInstance().getIntakeState()) {
+				case INTAKE:
+					Gear.getInstance().stopIntake();
+					break;
+				case STOP:
+					Gear.getInstance().startIntake();
+					break;
+				case EJECT:
+					Gear.getInstance().stopIntake();
+					break;
+
+				}
+				break;
+				
+			case TOP_BACK:
+				switch(Gear.getInstance().getIntakeState()) {
+				case INTAKE:
+					Gear.getInstance().stopIntake();
+					break;
+				case STOP:
+					Gear.getInstance().reverseIntake();
+					break;
+				case EJECT:
+					Gear.getInstance().stopIntake();
+					break;
+
+				}
+				break;
 
 			default:
 				break;

@@ -9,14 +9,16 @@ public class FuelManagement {
 
 	Talon shooterMotor, feederMotor, indexerMotor;
 	Spark intakeMotor;
-	static final double SHOOTER_POWER = 1; //TODO Find tuned value
-	static final double FEED_POWER = 0.50; //TODO Find tuned value
+	static final double SHOOTER_POWER = .80; //TODO Find tuned value
+	static final double FEED_POWER = 0.30; //TODO Find tuned value
 	static final double INTAKE_POWER = 0.50; //TODO Find tuned value
 	static final double INDEX_POWER = 0.50; //TODO Find tuned value
 
-	private boolean preparedToShoot = false;
-	private boolean shooting = false;
-	private boolean intaking = false;
+	enum SHOOTER_STATES { STOP, PREPARED, SHOOTING, REVERSE };
+	private SHOOTER_STATES shooter = SHOOTER_STATES.STOP;
+
+	enum INTAKE_STATES { IN, STOP, REVERSE };
+	private INTAKE_STATES intaking = INTAKE_STATES.STOP;
 
 	public static FuelManagement getInstance() {
 		if (fuelManagement == null)
@@ -42,9 +44,9 @@ public class FuelManagement {
 	}
 
 	public void prepareToShoot() {
-		if(!preparedToShoot) {
-			if (!shooting) {
-				shooting = true;
+		if(shooter != SHOOTER_STATES.PREPARED) {
+			if (shooter != SHOOTER_STATES.SHOOTING) {
+				shooter = SHOOTER_STATES.PREPARED;
 				shooterMotor.set(SHOOTER_POWER);
 				SmartDashboard.putBoolean("ShooterMotor", true);
 			} else {
@@ -56,15 +58,11 @@ public class FuelManagement {
 	}
 
 	public void shoot() {
-		if (preparedToShoot) {
-			if (!shooting) {
-				shooting = true;
-				feederMotor.set(FEED_POWER);
-				indexerMotor.set(INDEX_POWER);
-				SmartDashboard.putBoolean("DispenserMotor", true);
-			} else {
-				Util.consoleLog("Attempted to shoot while already shooting!");
-			}
+		if (shooter == SHOOTER_STATES.PREPARED) {
+			shooter = SHOOTER_STATES.SHOOTING;
+			feederMotor.set(FEED_POWER);
+			indexerMotor.set(INDEX_POWER);
+			SmartDashboard.putBoolean("Feeder", true);
 		}
 		else {
 			Util.consoleLog("Attempted to shoot while not prepared!");
@@ -72,42 +70,55 @@ public class FuelManagement {
 	}
 
 	public void endShoot() {
-		if (shooting) {
+		if (shooter == SHOOTER_STATES.SHOOTING) {
 			shooterMotor.set(0);
 			feederMotor.set(0);
 			indexerMotor.set(0);
-			shooting = false;
-			preparedToShoot = false;
+			shooter = SHOOTER_STATES.STOP;
 			SmartDashboard.putBoolean("ShooterMotor", false);
-			SmartDashboard.putBoolean("DispenserMotor", false);
+			SmartDashboard.putBoolean("Feeder", false);
+		} else if (shooter == SHOOTER_STATES.PREPARED) {
+			shooterMotor.set(0);
+			shooter = SHOOTER_STATES.STOP;
 		} else {
 			Util.consoleLog("Attempted endShoot while not shooting!");
 		}
 	}
 
 	public void intake() {
-		if (!intaking) {
-			intaking = true;
+		if (intaking != INTAKE_STATES.IN) {
+			intaking = INTAKE_STATES.IN;
 			intakeMotor.set(INTAKE_POWER);
+			SmartDashboard.putBoolean("BallPickupMotor", true);
 		} else {
 			Util.consoleLog("Attempted intake while already intaking!");
 		}
 	}
 
 	public void stopIntake() {
-		if (intaking) {
+		if (intaking != INTAKE_STATES.STOP) {
 			intakeMotor.set(0);
-			intaking = false;
+			intaking = INTAKE_STATES.STOP;
+			SmartDashboard.putBoolean("BallPickupMotor", false);
 		} else {
 			Util.consoleLog("Attempted stopIntake while not intaking!");
 		}
 	}
 
+	public void reverseFeeder() {
+		if (shooter != SHOOTER_STATES.REVERSE) {
+			feederMotor.set(-FEED_POWER);
+			shooter = SHOOTER_STATES.REVERSE;
+		} else {
+			Util.consoleLog("Attempted reversing feeder while already doing that");
+		}
+	}
+
 	public boolean getShooting() {
-		return shooting;
+		return shooter == SHOOTER_STATES.SHOOTING;
 	}
 
 	public boolean getPreparedToShoot() {
-		return preparedToShoot;
+		return shooter == SHOOTER_STATES.PREPARED || shooter == SHOOTER_STATES.SHOOTING;
 	}
 }

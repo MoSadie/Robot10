@@ -4,7 +4,8 @@ import com.ctre.CANTalon;
 
 import Team4450.Lib.Util;
 import Team4450.Lib.ValveDA;
-import edu.wpi.first.wpilibj.Talon;
+import Team4450.Robot10.Gear.ELEVATOR_STATES;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Gear {
 
@@ -46,7 +47,12 @@ public class Gear {
 		if (wristValve != null) wristValve.dispose();
 		gear = null;
 	}
-
+	
+	void updateNetworkTables() {
+		SmartDashboard.putBoolean("GearPickupDown", elevator_state == ELEVATOR_STATES.DOWN);
+		SmartDashboard.putBoolean("GearPickupMotor", (state == STATES.INTAKE || state == STATES.EJECT));
+	}
+	
 	public void startIntake() {
 		if (state != STATES.INTAKE) {
 			intakeMotor.set(INTAKE_SPEED);
@@ -83,6 +89,7 @@ public class Gear {
 				return;
 			case UP:
 				elevatorValve.SetB();
+				updateNetworkTables();
 				break;
 			}
 			break;
@@ -95,6 +102,7 @@ public class Gear {
 
 			case DOWN:
 				elevatorValve.SetA();
+				updateNetworkTables();
 				break;
 			}
 			break;
@@ -102,34 +110,61 @@ public class Gear {
 		elevator_state = stateToSetTo;
 	}
 
-	public void lowerWrist() {
+	public void extendWrist() {
 		wristValve.SetB();
 		startIntake();
 	}
 
-	public void raiseWrist() {
+	public void retractWrist() {
 		wristValve.SetA();
 		stopIntake();
+	}
+	
+	public CANTalon getIntakeMotor() {
+		return intakeMotor;
+	}
+	
+	public STATES getIntakeState() {
+		return state;
+	}
+	
+	public ELEVATOR_STATES getElevatorState() {
+		return elevator_state;
 	}
 }
 
 class GearGrab extends Thread {
-	CANTalon intakeMotor;
-	private static final double TRIGGER_CURRENT = 12.1;
+	private static final double TRIGGER_CURRENT = 10.1;
 	boolean finished = false;
-	GearGrab(CANTalon intakeMotor) {
+	
+	private static GearGrab gearGrab = null;
+	public static GearGrab getInstance() {
+		if (gearGrab == null)
+			gearGrab = new GearGrab();
+		return gearGrab;
+	}
+	
+	GearGrab() {
 		setName("Grab Gear");
-		this.intakeMotor = intakeMotor;
 	}
 
 	public void run() {
 		finished = false;
-		intakeMotor.set(Gear.INTAKE_SPEED);
+		Gear.getInstance().setElevator(ELEVATOR_STATES.DOWN);
+		Gear.getInstance().extendWrist();
+		Gear.getInstance().startIntake();
 		while (!isInterrupted() && !finished) {
-			if (intakeMotor.getOutputCurrent() >= TRIGGER_CURRENT) {
+			if (Gear.getInstance().getIntakeMotor().getOutputCurrent() >= TRIGGER_CURRENT) {
 				finished = true;
 			}
+			try {
+				sleep(50);
+			} catch (InterruptedException e) {
+
+			}
 		}
-		intakeMotor.set(0);
+		Gear.getInstance().stopIntake();
+		Gear.getInstance().retractWrist();
+		Gear.getInstance().setElevator(ELEVATOR_STATES.UP);
 	}
 }
