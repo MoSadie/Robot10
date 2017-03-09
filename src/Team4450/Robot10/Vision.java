@@ -61,7 +61,7 @@ public class Vision {
 					target2 = Imgproc.boundingRect(pipeline.filterContoursOutput().get(i2));
 					
 					//See if the width and height are within an acceptable difference.
-					if (Math.abs(target1.width-target2.width) <= ERROR_RANGE && Math.abs(target1.height-target2.height) <= ERROR_RANGE) {
+					if (sameWithError(target1,target2,ERROR_RANGE)) {
 						//If true, calculate the center of both rectangles.
 						double centerX1 = target1.x + (target1.width / 2);
 						double centerX2 = target2.x + (target2.width / 2);
@@ -73,5 +73,11 @@ public class Vision {
 			}
 		}
 		return 9001;
+	}
+	
+	public static boolean sameWithError(Rect rect1, Rect rect2, double error) {
+		boolean width = Math.abs(rect1.width-rect2.width) <= error;
+		boolean height = Math.abs(rect1.height-rect2.height) <= error;
+		return width && height;
 	}
 }
