@@ -23,17 +23,18 @@ public class Vision {
 	//Section 3: Non-Static Variables
 	
 	private CameraFeed cameraFeed;
-	
+	private PegPipeline pipeline;
 	//Section 4: Constructor
 	
 	private Vision() {
 		cameraFeed = CameraFeed.getInstance();
+		pipeline = new PegPipeline();
+		
 	}
 	
 	//Section 5: Non-Static Methods
 	
 	public double getPegX() {
-		PegPipeline pipeline = new PegPipeline();
 		pipeline.process(cameraFeed.getCurrentImage());
 		if (!pipeline.filterContoursOutput().isEmpty()) {
 			Rect target1;
