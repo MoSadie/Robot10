@@ -35,7 +35,7 @@ public class Vision {
 	
 	//Section 5: Non-Static Methods
 	
-	public double getPegX() {
+	public int getPegX() {
 		
 		//Process the latest image
 		pipeline.process(cameraFeed.getCurrentImage());
@@ -63,11 +63,11 @@ public class Vision {
 					//See if the width and height are within an acceptable difference.
 					if (sameWithError(target1,target2,ERROR_RANGE)) {
 						//If true, calculate the center of both rectangles.
-						double centerX1 = target1.x + (target1.width / 2);
-						double centerX2 = target2.x + (target2.width / 2);
+						int centerX1 = target1.x + (target1.width / 2);
+						int centerX2 = target2.x + (target2.width / 2);
 						
 						//Calculate the center x of those points and return that value
-						return centerX1 + ((centerX1-centerX2)/2);
+						return (centerX1 + ((centerX1-centerX2)/2));
 					}
 				}
 			}

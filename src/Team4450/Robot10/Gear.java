@@ -61,6 +61,14 @@ public class Gear {
 			Util.consoleLog("Tried to startIntake while already intaking!");
 		}
 	}
+	
+	public void startAutoIntake() {
+		GearGrab.getInstance().run();
+	}
+	
+	public void killAutoIntake() {
+		GearGrab.getInstance().finished = true;
+	}
 
 	public void stopIntake() {
 		if (state != STATES.STOP) {

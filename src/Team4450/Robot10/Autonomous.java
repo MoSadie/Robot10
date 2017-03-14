@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Autonomous
 {
 	private final Robot	robot;
+	private GearBox gearBox;
+	private Gear gear;
 	private final int	program = (int) SmartDashboard.getNumber("AutoProgramSelect",0);
 	
 	// encoder is plugged into dio port 2 - orange=+5v blue=signal, dio port 3 black=gnd yellow=signal. 
@@ -20,6 +22,10 @@ public class Autonomous
 		Util.consoleLog();
 		
 		this.robot = robot;
+		
+		
+		gearBox = GearBox.getInstance();
+		gear = Gear.getInstance();
 	}
 
 	public void dispose()
@@ -39,10 +45,10 @@ public class Autonomous
 		// Initialize encoder.
 		encoder.reset();
         
-        // Set gyro to heading 0.
+        // Set gyro/NavX to heading 0.
         //robot.gyro.reset();
 		robot.navx.resetYaw();
-
+		
         // Wait to start motors so gyro will be zero before first movement.
         Timer.delay(.50);
 
@@ -51,37 +57,196 @@ public class Autonomous
 			case 0:		// No auto program.
 				break;
 				
-			case 1:
-				autoDrive(-.5,9000,true);
+			case 1:		// Drive forward to line and stop.
+				autoDrive(-.70, 9000, true);
+				
+				break;
+				
+			case 2:		// Place gear center start.
+				placeGearCenter(5800, false);
+				
+				break;
+				
+			case 3:		// Place gear left start.
+				placeGearFromSide(true, false);
+				
+				break;
+				
+			case 4:		// Place gear right start.
+				placeGearFromSide(false, false);
+				
+				break;
+				
+			case 5:		// Place gear left start with vision.
+				placeGearFromSide(true, true);
+				
+				break;
+				
+			case 6:		// Place gear right start with vision.
+				placeGearFromSide(false, true);
+				
+				break;
+				
+			case 7:		// TestDrive backward and stop.
+				autoDrive(.70, 9000, true);
+				
+				break;
 		}
 		
 		Util.consoleLog("end");
 	}
 
+	private void placeGearCenter(int encoderCounts, boolean useVision)
+	{
+		Util.consoleLog("%d", encoderCounts);
+		
+		// Drive forward to peg and stop.
+		
+		if (useVision)
+			autoDrive(-.60, encoderCounts, true);
+		else
+			autoDriveVision(-.60, encoderCounts, true);
+		
+		// Start gear pickup motor in reverse.
+		
+		gear.reverseIntake();
+		
+		Timer.delay(.500);
+		
+		// Drive backward a bit.
+
+		autoDrive(.50, 1000, true);
+		
+		gear.stopIntake();
+	}
+	
+	private void placeGearFromSide(boolean leftSide, boolean useVision)
+	{
+		Util.consoleLog("left side=%b", leftSide);
+		
+		// Drive forward to be on a 55 degree angle with side peg and stop.
+		
+		if (leftSide)
+			autoDrive(-.50, 5600, true);
+		else
+			autoDrive(-.50, 5600, true);
+		
+		// rotate as right or left 90 degrees.
+		
+		if (leftSide)
+			// Rotate right.
+			autoRotate(-.60, 55);
+		else
+			// Rotate left
+			autoRotate(.60, 55);
+		
+		// Place gear.
+		
+		placeGearCenter(5300, useVision);
+	}
+	
 	// Auto drive in set direction and power for specified encoder count. Stops
-	// with our without brakes on CAN bus drive system. Uses gyro to go straight.
+	// with or without brakes on CAN bus drive system. Uses gyro/NavX to go straight.
 	
 	private void autoDrive(double power, int encoderCounts, boolean enableBrakes)
 	{
 		int		angle;
 		double	gain = .03;
 		
-		Util.consoleLog("pwr=%f, count=%d, coast=%b", power, encoderCounts, enableBrakes);
+		Util.consoleLog("pwr=%f, count=%d, brakes=%b", power, encoderCounts, enableBrakes);
 
 		if (robot.isComp) robot.SetCANTalonBrakeMode(enableBrakes);
+
+		encoder.reset();
+		robot.navx.resetYaw();
 		
 		while (robot.isAutonomous() && Math.abs(encoder.get()) < encoderCounts) 
 		{
 			LCD.printLine(3, "encoder=%d", encoder.get());
-			//LCD.printLine(5, "gyroAngle=%d, gyroRate=%d", (int) robot.gyro.getAngle(), (int) robot.gyro.getRate());
-			LCD.printLine(5, "gyroAngle=%d", (int) robot.navx.getYaw());
 			
-			// Angle is negative if robot veering left, positive if veering right.
+			// Angle is negative if robot veering left, positive if veering right when going forward.
+			// It is opposite when going backward. Note that for this robot, - power means forward and
+			// + power means backward.
 			
 			//angle = (int) robot.gyro.getAngle();
 			angle = (int) robot.navx.getYaw();
+
+			LCD.printLine(5, "angle=%d", angle);
+			
+			// Invert angle for backwards.
+			
+			if (power > 0) angle = -angle;
 			
 			//Util.consoleLog("angle=%d", angle);
+			
+			// Note we invert sign on the angle because we want the robot to turn in the opposite
+			// direction than it is currently going to correct it. So a + angle says robot is veering
+			// right so we set the turn value to - because - is a turn left which corrects our right
+			// drift.
+			
+			robot.robotDrive.drive(power, -angle * gain);
+			
+			Timer.delay(.020);
+		}
+
+		robot.robotDrive.tankDrive(0, 0, true);				
+	}
+	
+	// Auto rotate left or right the specified angle. Left/right from robots forward view.
+	// Turn right, power is -
+	// Turn left, power is +
+	// angle of rotation is always +.
+	
+	private void autoRotate(double power, int angle)
+	{
+		Util.consoleLog("pwr=%.3f  angle=%d", power, angle);
+		
+		robot.navx.resetYaw();
+		
+		robot.robotDrive.tankDrive(power, -power);
+
+		while (robot.isAutonomous() && Math.abs((int) robot.navx.getYaw()) < angle) {Timer.delay(.020);} 
+		
+		robot.robotDrive.tankDrive(0, 0);
+	}
+	
+	// Auto drive in set direction and power for specified encoder count. Stops
+	// with or without brakes on CAN bus drive system. Uses vision to drive to spring.
+	
+	private void autoDriveVision(double power, int encoderCounts, boolean enableBrakes)
+	{
+		int		angle;
+		double	gain = .03;
+		
+		Util.consoleLog("pwr=%f, count=%d, brakes=%b", power, encoderCounts, enableBrakes);
+
+		if (robot.isComp) robot.SetCANTalonBrakeMode(enableBrakes);
+
+		encoder.reset();
+		
+		while (robot.isAutonomous() && Math.abs(encoder.get()) < encoderCounts) 
+		{
+			LCD.printLine(3, "encoder=%d", encoder.get());
+			
+			// Angle is negative if robot veering left, positive if veering right when going forward.
+			// It is opposite when going backward. Note that for this robot, - power means forward and
+			// + power means backward.
+			angle = (CameraFeed.imageWidth/2) + Vision.getInstance().getPegX();
+			if (angle == -1)
+				angle = 0;
+			
+			LCD.printLine(5, "angle=%d", (int) angle);
+			
+			// Invert angle for backwards.
+			
+			if (power > 0) angle = -angle;
+			
+			//Util.consoleLog("angle=%d", angle);
+			
+			// Note we invert sign on the angle because we want the robot to turn in the opposite
+			// direction than it is currently going to correct it. So a + angle says robot is veering
+			// right so we set the turn value to - because - is a turn left which corrects our right
+			// drift.
 			
 			robot.robotDrive.drive(power, -angle * gain);
 			

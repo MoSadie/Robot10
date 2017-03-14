@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import Team4450.Lib.*;
-import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -30,7 +29,9 @@ import com.ctre.CANTalon.*;
 
 public class Robot extends SampleRobot 
 {
-	static final String  	PROGRAM_NAME = "SWF10-02.21.17-01";
+	static final String  	PROGRAM_NAME = "SWF10-03.14.17-01";
+	
+	static boolean IsClone = false;
 
 	// Motor CAN ID/PWM port assignments (1=left-front, 2=left-rear, 3=right-front, 4=right-rear)
 	CANTalon				LFCanTalon, LRCanTalon, RFCanTalon, RRCanTalon, LSlaveCanTalon, RSlaveCanTalon;
@@ -44,7 +45,9 @@ public class Robot extends SampleRobot
 
 	final Compressor		compressor = new Compressor(0);	// Compressor class represents the PCM. There are 2.
 	final Compressor		compressor1 = new Compressor(1);
-	final AnalogGyro		gyro = new AnalogGyro(0);		// gyro must be plugged into analog port 0 or 1.
+	private ValveDA		unusedValve = new ValveDA(1, 3);
+	
+	//final AnalogGyro		gyro = new AnalogGyro(0);		// gyro must be plugged into analog port 0 or 1.
 
 	public Properties		robotProperties;
 
@@ -106,6 +109,8 @@ public class Robot extends SampleRobot
 				isComp = true;
 			else
 				isClone = true;
+			
+			IsClone = isClone;
 
 			SmartDashboard.putString("Program", PROGRAM_NAME);
 
@@ -125,6 +130,9 @@ public class Robot extends SampleRobot
 			PDP.clearStickyFaults();
 			compressor.clearAllPCMStickyFaults();
 			compressor1.clearAllPCMStickyFaults();
+			
+			// Seat unused valve.
+	   		unusedValve.SetA();
 
 			// Configure motor controllers and RobotDrive.
 
@@ -192,7 +200,7 @@ public class Robot extends SampleRobot
 			Gear.getInstance().stopIntake();
 
 			// Reset driver station LEDs.
-
+			
 			SmartDashboard.putBoolean("Disabled", true);
 			SmartDashboard.putBoolean("Auto Mode", false);
 			SmartDashboard.putBoolean("Teleop Mode", false);
@@ -200,8 +208,14 @@ public class Robot extends SampleRobot
 			SmartDashboard.putBoolean("FMS", ds.isFMSAttached());
 			SmartDashboard.putBoolean("AutoTarget", false);
 			SmartDashboard.putBoolean("TargetLocked", false);
-			SmartDashboard.putBoolean("Feeder", false);
+			SmartDashboard.putBoolean("BallPickupMotor", false);
 			SmartDashboard.putBoolean("ShooterMotor", false);
+			SmartDashboard.putBoolean("GearPickupMotor", false);
+			SmartDashboard.putBoolean("GearPickupDown", false);
+			SmartDashboard.putBoolean("Low", false);
+			SmartDashboard.putBoolean("High", false);
+			SmartDashboard.putBoolean("Neutral", false);
+			SmartDashboard.putBoolean("Feeder", false);
 
 
 			Util.consoleLog("end");

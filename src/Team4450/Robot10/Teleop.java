@@ -3,18 +3,12 @@ package Team4450.Robot10;
 
 import java.lang.Math;
 
-import org.opencv.core.Rect;
-import org.opencv.imgproc.Imgproc;
-
 import Team4450.Lib.*;
 import Team4450.Lib.JoyStick.*;
 import Team4450.Lib.LaunchPad.*;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 class Teleop
 {
@@ -25,7 +19,7 @@ class Teleop
 	public boolean				invertDrive = false;
 
 	// Wheel encoder is plugged into dio port 1 - orange=+5v blue=signal, dio port 2 black=gnd yellow=signal. 
-	//private Encoder				encoder = new Encoder(1, 2, true, EncodingType.k4X);
+	private Encoder				encoder = new Encoder(1, 2, true, EncodingType.k4X);
 
 	// Encoder ribbon cable to dio ports: ribbon wire 2 = orange, 5 = yellow, 7 = blue, 10 = black
 
@@ -48,7 +42,7 @@ class Teleop
 		if (rightStick != null) rightStick.dispose();
 		if (utilityStick != null) utilityStick.dispose();
 		if (launchPad != null) launchPad.dispose();
-		//if (encoder != null) encoder.free();
+		if (encoder != null) encoder.free();
 	}
 
 	void OperatorControl()
@@ -89,6 +83,7 @@ class Teleop
 		leftStick.Start();
 
 		rightStick = new JoyStick(robot.rightStick, "RightStick", JoyStickButtonIDs.TOP_LEFT, this);
+		rightStick.AddButton(JoyStickButtonIDs.TRIGGER);
 		rightStick.addJoyStickEventListener(new RightStickListener());
 		rightStick.Start();
 
@@ -109,9 +104,9 @@ class Teleop
 		if (robot.isComp) robot.SetCANTalonBrakeMode(lpControl.latchedState);
 
 		// Set gyro to heading 0.
-		robot.gyro.reset();
+		//robot.gyro.reset();
 
-		//robot.navx.resetYaw();
+		robot.navx.resetYaw();
 		//robot.navx.dumpValuesToNetworkTables();
 
 		// Motor safety turned on.
@@ -143,7 +138,7 @@ class Teleop
 			utilX = utilityStick.GetX();
 
 			LCD.printLine(4, "leftY=%.4f  rightY=%.4f utilX=%.4f", leftY, rightY, utilX);
-			LCD.printLine(5, "gyroAngle=%d, gyroRate=%d", (int) robot.gyro.getAngle(), (int) robot.gyro.getRate());
+			LCD.printLine(5, "encoder=%d, shootEncoder=%d", encoder.get(), FuelManagement.getInstance().tlEncoder.get());
 			//LCD.printLine(6, "yaw=%.0f, total=%.0f, rate=%.3f", robot.navx.getYaw(), robot.navx.getTotalYaw(), robot.navx.getYawRate());
 
 			// Set wheel motors.
@@ -247,10 +242,7 @@ class Teleop
 			{
 			case BUTTON_BLUE:
 				if (launchPadEvent.control.latchedState)
-				{
-					shifterLow();
 					ptoEnable();
-				}
 				else
 					ptoDisable();
 
@@ -264,17 +256,26 @@ class Teleop
 				break;
 
 			case BUTTON_BLUE_RIGHT:
-				Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.DOWN);
+				if (control.latchedState)
+					Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.DOWN);
+				else
+					Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.UP);
 				break;
 
 
 
 			case BUTTON_RED_RIGHT:
-				Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.UP);
+				if (control.latchedState)
+					Gear.getInstance().extendWrist();
+				else
+					Gear.getInstance().retractWrist();
 				break;
 
 			case BUTTON_YELLOW:
-				robot.cameraThread.ChangeCamera();
+				if (control.latchedState)
+					Gear.getInstance().startAutoIntake();
+				else
+					Gear.getInstance().killAutoIntake();
 				break;
 
 
@@ -328,6 +329,10 @@ class Teleop
 			switch(button.id)
 			{
 			case TOP_LEFT:
+				robot.cameraThread.ChangeCamera();
+				break;
+				
+			case TRIGGER:
 				robot.cameraThread.ChangeCamera();
 				break;
 
@@ -421,7 +426,7 @@ class Teleop
 
 				}
 				break;
-				
+
 			case TOP_BACK:
 				switch(Gear.getInstance().getIntakeState()) {
 				case INTAKE:

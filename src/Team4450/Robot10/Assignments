@@ -18,7 +18,7 @@ Port	Device			Description
 0		Spark			Ball pickup motor.
 1		Talon			Shooter motor.
 2		Talon			Shooter feeder motor.
-3		Talon			Indexer motor.
+3		Talon			Shooter indexer motor.
 
 
 PCM 0 Ports
@@ -30,17 +30,20 @@ Port	Device blk-pos	Description
 1		ValveDA	0		B side high/low speed shifter. Set High speed.
 2		ValveDA 1		A side PTO shifter. Engage PTO.
 3		ValveDA 1		B side PTO shifter. Disendage PTO.
-4		ValveDA 2		A side neutral shifter. On 3-pos cyl sets low speed when cyl is
-                                        already in high speed position.
+4		ValveDA 2		A side neutral shifter. On 3-pos cyl sets low speed when cyl
+                                       is already in high speed position.
 5		VavleDA 2		B side not used. Blocked.	
-6		ValveDA 3		A side Gear pickup up position.
-7		ValveDA 3		B side Gear pickup down position.
+6		ValveDA 3		A side Gear Pickup lift up position.
+7		ValveDA 3		B side Gear Pickup lift down position.
+                                                                                                       
 
 PCM 1 Ports
 Port	Device blk-pos	Description
 -----------------------------------------------------------------------------------
-0		ValveDA	4		A side Gear Pickup in position.
-1		VavleDA 4		B side Gear pickup out position.
+0		ValveDA	4		A side Gear Pickup elbow in position.
+1		VavleDA 4		B side Gear pickup elbow out position.
+3		ValveDA 5		A side not used.
+4		ValveDA	5		B side not used.
 
 
 Digital I/O Ports
@@ -76,6 +79,9 @@ Button Name				Function
 Trigger					Toggle despensing fuel to shooter.
 Top_Left				Toggles spining up fuel shooter wheel.
 Top_Right				Toggles intake motors.
+Top_Middle				Toggles gear motor in.
+Top_Back                Toggles gear motor out (put gear on spring).
+
 
 LaunchPad
 Button Name				Function
