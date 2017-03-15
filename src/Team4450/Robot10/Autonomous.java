@@ -2,6 +2,7 @@
 package Team4450.Robot10;
 
 import Team4450.Lib.*;
+import Team4450.Robot10.Gear.ELEVATOR_STATES;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
@@ -102,7 +103,7 @@ public class Autonomous
 		
 		// Drive forward to peg and stop.
 		
-		if (useVision)
+		if (!useVision)
 			autoDrive(-.60, encoderCounts, true);
 		else
 			autoDriveVision(-.60, encoderCounts, true);
@@ -110,6 +111,10 @@ public class Autonomous
 		// Start gear pickup motor in reverse.
 		
 		gear.reverseIntake();
+		
+		Timer.delay(.500);
+		
+		Gear.getInstance().setElevator(ELEVATOR_STATES.DOWN);
 		
 		Timer.delay(.500);
 		

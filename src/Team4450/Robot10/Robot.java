@@ -29,7 +29,7 @@ import com.ctre.CANTalon.*;
 
 public class Robot extends SampleRobot 
 {
-	static final String  	PROGRAM_NAME = "SWF10-03.14.17-01";
+	static final String  	PROGRAM_NAME = "SWF10-03.15.17-01";
 	
 	static boolean IsClone = false;
 

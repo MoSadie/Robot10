@@ -14,19 +14,19 @@ public class FuelManagement {
 
 	Talon shooterMotor, feederMotor, indexerMotor;
 	Spark intakeMotor;
-	static double SHOOTER_POWER = .80;
+	static double SHOOTER_POWER = .45;
 	static double FEED_POWER = 0.30;
 	static double INTAKE_POWER = 0.80;
 	static double INDEX_POWER = 0.50;
-	
-	public static double				SHOOTER_RPM = 9000;
+
+	public static double				SHOOTER_RPM = 3000;
 	public static double				PVALUE = .0025, IVALUE = .0025, DVALUE = .003;
-	
+
 	// Touchless Encoder single channel on dio port 0.
 	public Counter		tlEncoder = new Counter(0);
-	
+
 	private final PIDController		shooterPidController;
-	
+
 	public ShooterSpeedSource		shooterSpeedSource = new ShooterSpeedSource(tlEncoder);
 
 	enum SHOOTER_STATES { STOP, PREPARED, SHOOTING, REVERSE };
@@ -45,21 +45,21 @@ public class FuelManagement {
 	private FuelManagement() {
 		if (Robot.IsClone) {
 			// Clone robot PID defaults.
-			SHOOTER_POWER = .70;
-			SHOOTER_RPM = 9000;
+			SHOOTER_POWER = .45;
+			SHOOTER_RPM = 3000;
 
 			PVALUE = .002; 
 			IVALUE = .002;
 			DVALUE = .005; 
 		}
-		
+
 		intakeMotor = new Spark(0);
 		intakeMotor.setInverted(true); //TODO Check this
 		shooterMotor = new Talon(1);
 		feederMotor = new Talon(2);
 		indexerMotor = new Talon(3);
 		indexerMotor.setInverted(true);
-		
+
 		tlEncoder.reset();
 		tlEncoder.setDistancePerPulse(1);
 		tlEncoder.setPIDSourceType(PIDSourceType.kRate);
@@ -157,7 +157,7 @@ public class FuelManagement {
 	public boolean getPreparedToShoot() {
 		return shooter == SHOOTER_STATES.PREPARED || shooter == SHOOTER_STATES.SHOOTING;
 	}
-	
+
 	/**
 	 * Automatically hold shooter motor speed (rpm). Starts PID controller to
 	 * manage motor power to maintain rpm target.
@@ -170,7 +170,7 @@ public class FuelManagement {
 		double dValue = SmartDashboard.getNumber("DValue", DVALUE);
 
 		Util.consoleLog("%.0f  p=%.4f  i=%.4f  d=%.4f", rpm, pValue, iValue, dValue);
-		
+
 		// p,i,d values are a guess.
 		// f value is the base motor speed, which is where (power) we start.
 		// setpoint is target rpm converted to rev/sec.
@@ -192,17 +192,17 @@ public class FuelManagement {
 		private Counter		counter;
 		private int			inversion = 1;
 		private double		rpmAccumulator, rpmSampleCount;
-		
+
 		public ShooterSpeedSource(Encoder encoder)
 		{
 			this.encoder = encoder;
 		}
-		
+
 		public ShooterSpeedSource(Counter counter)
 		{
 			this.counter = counter;
 		}
-		
+
 		@Override
 		public void setPIDSourceType(PIDSourceType pidSource)
 		{
@@ -218,7 +218,7 @@ public class FuelManagement {
 
 			return null;
 		}
-		
+
 		public void setInverted(boolean inverted)
 		{
 			if (inverted)
@@ -231,28 +231,28 @@ public class FuelManagement {
 		{
 			if (encoder != null ) return encoder.get() * inversion;
 			if (counter != null ) return counter.get() * inversion;
-			
+
 			return 0;
 		}
-		
+
 		public double getRate()
 		{
 			// TODO: Some sort of smoothing could be done to damp out the
 			// fluctuations in encoder rate.
-			
-//			if (rpmSampleCount > 2048) rpmAccumulator = rpmSampleCount = 0;
-//			
-//			rpmAccumulator += encoder.getRate();
-//			rpmSampleCount += 1;
-//			
-//			return rpmAccumulator / rpmSampleCount;
+
+			//			if (rpmSampleCount > 2048) rpmAccumulator = rpmSampleCount = 0;
+			//			
+			//			rpmAccumulator += encoder.getRate();
+			//			rpmSampleCount += 1;
+			//			
+			//			return rpmAccumulator / rpmSampleCount;
 
 			if (encoder != null) return encoder.getRate() * inversion;
 			if (counter != null) return counter.getRate() * inversion;
-			
+
 			return 0;
 		}
-		
+
 		/**
 		 * Return the current rotational rate of the encoder or current value (count) to PID controllers.
 		 * @return Encoder revolutions per second or current count.
@@ -260,16 +260,29 @@ public class FuelManagement {
 		@Override
 		public double pidGet()
 		{
-			if (encoder.getPIDSourceType() == PIDSourceType.kRate)
-				return getRate();
-			else
-				return get();
+			if (encoder != null)
+			{
+				if (encoder.getPIDSourceType() == PIDSourceType.kRate)
+					return getRate();
+				else
+					return get();
+			}
+
+			if (counter != null)
+			{
+				if (counter.getPIDSourceType() == PIDSourceType.kRate)
+					return getRate();
+				else
+					return get();
+			}
+
+			return 0;
 		}
-		
+
 		public void reset()
 		{
 			rpmAccumulator = rpmSampleCount = 0;
-			
+
 			if (encoder != null) encoder.reset();
 			if (counter != null) counter.reset();
 		}
