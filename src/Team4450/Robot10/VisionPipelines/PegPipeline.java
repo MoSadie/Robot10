@@ -51,9 +51,9 @@ public class PegPipeline implements VisionPipeline {
 
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = resizeImageOutput;
-		double[] hsvThresholdHue = {34.532372814288244, 111.39932131197672};
-		double[] hsvThresholdSaturation = {0.0, 35.97269347910181};
-		double[] hsvThresholdValue = {232.37409479648088, 255.0};
+		double[] hsvThresholdHue = {0.0, 180.0};
+		double[] hsvThresholdSaturation = {0.0, 24.36859653264589};
+		double[] hsvThresholdValue = {247.66187624429628, 255.0};
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
 
 		// Step Blur0:
@@ -69,13 +69,13 @@ public class PegPipeline implements VisionPipeline {
 
 		// Step Filter_Contours0:
 		ArrayList<MatOfPoint> filterContoursContours = findContoursOutput;
-		double filterContoursMinArea = 80.0;
+		double filterContoursMinArea = 200.0;
 		double filterContoursMinPerimeter = 40.0;
 		double filterContoursMinWidth = 5.0;
 		double filterContoursMaxWidth = 1000.0;
 		double filterContoursMinHeight = 4.0;
 		double filterContoursMaxHeight = 1000.0;
-		double[] filterContoursSolidity = {86.97941599326904, 100};
+		double[] filterContoursSolidity = {49.20962839012402, 100};
 		double filterContoursMaxVertices = 1000000.0;
 		double filterContoursMinVertices = 0.0;
 		double filterContoursMinRatio = 0.0;

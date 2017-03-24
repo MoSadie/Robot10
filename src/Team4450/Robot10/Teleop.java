@@ -193,6 +193,21 @@ class Teleop
 
 		return joystickValue;
 	}
+	
+	// Map joystick y value of 0.0 to 1.0 to the motor working power range of approx 0.5 to 1.0 using
+	// logrithmic curve for climbing.
+
+	private double climbLogCorrection(double joystickValue)
+	{
+		double base = Math.pow(13.5, 1/3);
+
+		if (joystickValue > 0)
+			joystickValue = baseLog(base, joystickValue + 1);
+		else if (joystickValue < 0)
+			joystickValue = -baseLog(base, -joystickValue + 1);
+
+		return joystickValue;
+	}
 
 	// Transmission control functions.
 	//For legacy code, should use GearBox class directly
