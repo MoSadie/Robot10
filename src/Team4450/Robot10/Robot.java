@@ -29,7 +29,7 @@ import com.ctre.CANTalon.*;
 
 public class Robot extends SampleRobot 
 {
-	static final String  	PROGRAM_NAME = "SWF10-03.15.17-01";
+	static final String  	PROGRAM_NAME = "SWF10-03.25.17-01";
 	
 	static boolean IsClone = false;
 
@@ -60,7 +60,8 @@ public class Robot extends SampleRobot
 	DriverStation.Alliance	alliance;
 	int                       location;
 
-	Thread               	monitorBatteryThread, monitorDistanceThread, monitorCompressorThread;
+	Thread               	monitorBatteryThread, monitorCompressorThread;
+	MonitorDistanceMBX monitorDistanceThread;
 	CameraFeed			cameraThread;
 
 	NavX					navx;
@@ -118,7 +119,7 @@ public class Robot extends SampleRobot
 
 			// Initialize PID data entry fields on the DS to thier default values.
 
-			SmartDashboard.putBoolean("PIDEnabled", false);
+			SmartDashboard.putBoolean("PIDEnabled", true);
 			SmartDashboard.putNumber("PValue", 0);
 			SmartDashboard.putNumber("IValue", 0);
 			SmartDashboard.putNumber("DValue", 0);
@@ -156,6 +157,10 @@ public class Robot extends SampleRobot
 			//        gyro.initGyro();
 			//        gyro.setSensitivity(.007);	// Analog Devices model ADSR-S652.
 			//        gyro.calibrate();
+			
+			// Create NavX object here so it has time to calibrate before we
+			// use it. Takes 10 seconds.
+			navx = NavX.getInstance();
 
 			// Start the battery, compressor and camera feed monitoring Tasks.
 
@@ -170,14 +175,10 @@ public class Robot extends SampleRobot
 			cameraThread = CameraFeed.getInstance(); 
 			cameraThread.start();
 
-			// Start thread to monitor distance sensor.
+			// Start thread to monitor distance sensor. Uses Analog port 1
 
-			//monitorDistanceThread = MonitorDistanceMBX.getInstance(this);
-			//monitorDistanceThread.start();
-
-			// Create NavX object here so it has time to calibrate before we
-			// use it. Takes 10 seconds.
-			navx = NavX.getInstance();
+			monitorDistanceThread = MonitorDistanceMBX.getInstance(this);
+			monitorDistanceThread.start();
 
 			Util.consoleLog("end");
 		}

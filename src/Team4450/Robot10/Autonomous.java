@@ -15,9 +15,6 @@ public class Autonomous
 	private Gear gear;
 	private final int	program = (int) SmartDashboard.getNumber("AutoProgramSelect",0);
 	
-	// encoder is plugged into dio port 2 - orange=+5v blue=signal, dio port 3 black=gnd yellow=signal. 
-	private Encoder		encoder = new Encoder(1, 2, true, EncodingType.k4X);
-
 	Autonomous(Robot robot)
 	{
 		Util.consoleLog();
@@ -27,13 +24,12 @@ public class Autonomous
 		
 		gearBox = GearBox.getInstance();
 		gear = Gear.getInstance();
+		Vision.getInstance(); //To init it before we need it.
 	}
 
 	public void dispose()
 	{
 		Util.consoleLog();
-		
-		encoder.free();
 	}
 
 	public void execute()
@@ -43,9 +39,6 @@ public class Autonomous
 
 		robot.robotDrive.setSafetyEnabled(false);
 
-		// Initialize encoder.
-		encoder.reset();
-        
         // Set gyro/NavX to heading 0.
         //robot.gyro.reset();
 		robot.navx.resetYaw();
@@ -162,12 +155,12 @@ public class Autonomous
 
 		if (robot.isComp) robot.SetCANTalonBrakeMode(enableBrakes);
 
-		encoder.reset();
+		GearBox.getInstance().getEncoder().reset();
 		robot.navx.resetYaw();
 		
-		while (robot.isAutonomous() && Math.abs(encoder.get()) < encoderCounts) 
+		while (robot.isAutonomous() && Math.abs(GearBox.getInstance().getEncoder().get()) < encoderCounts) 
 		{
-			LCD.printLine(3, "encoder=%d", encoder.get());
+			LCD.printLine(3, "encoder=%d", GearBox.getInstance().getEncoder().get());
 			
 			// Angle is negative if robot veering left, positive if veering right when going forward.
 			// It is opposite when going backward. Note that for this robot, - power means forward and
@@ -227,18 +220,22 @@ public class Autonomous
 
 		if (robot.isComp) robot.SetCANTalonBrakeMode(enableBrakes);
 
-		encoder.reset();
+		GearBox.getInstance().getEncoder().reset();
 		
-		while (robot.isAutonomous() && Math.abs(encoder.get()) < encoderCounts) 
+		while (robot.isAutonomous() && Math.abs(GearBox.getInstance().getEncoder().get()) < encoderCounts) 
 		{
-			LCD.printLine(3, "encoder=%d", encoder.get());
+			LCD.printLine(3, "encoder=%d", GearBox.getInstance().getEncoder().get());
 			
 			// Angle is negative if robot veering left, positive if veering right when going forward.
 			// It is opposite when going backward. Note that for this robot, - power means forward and
 			// + power means backward.
+			int pegX = Vision.getInstance().getPegX();
 			angle = (CameraFeed.imageWidth/2) + Vision.getInstance().getPegX();
-			if (angle == -1)
+			SmartDashboard.putBoolean("TargetLocked", true);
+			if (pegX == 9001) {
+				SmartDashboard.putBoolean("TargetLocked", false);
 				angle = 0;
+			}
 			
 			LCD.printLine(5, "angle=%d", (int) angle);
 			

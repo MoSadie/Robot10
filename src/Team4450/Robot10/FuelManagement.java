@@ -19,8 +19,8 @@ public class FuelManagement {
 	static double INTAKE_POWER = 0.80;
 	static double INDEX_POWER = 0.50;
 
-	public static double				SHOOTER_RPM = 3000;
-	public static double				PVALUE = .0025, IVALUE = .0025, DVALUE = .003;
+	public static double				SHOOTER_RPM = 3100;
+	public static double				PVALUE = .0025, IVALUE = .0025, DVALUE = .005;
 
 	// Touchless Encoder single channel on dio port 0.
 	public Counter		tlEncoder = new Counter(0);
@@ -51,19 +51,27 @@ public class FuelManagement {
 			PVALUE = .002; 
 			IVALUE = .002;
 			DVALUE = .005; 
+			
+			INDEX_POWER = 0.25;
 		}
 
 		intakeMotor = new Spark(0);
-		intakeMotor.setInverted(true); //TODO Check this
 		shooterMotor = new Talon(1);
-		feederMotor = new Talon(2);
-		indexerMotor = new Talon(3);
+		feederMotor = new Talon(3);
+		feederMotor.setInverted(true);
+		indexerMotor = new Talon(2);
 		indexerMotor.setInverted(true);
 
 		tlEncoder.reset();
 		tlEncoder.setDistancePerPulse(1);
 		tlEncoder.setPIDSourceType(PIDSourceType.kRate);
 		shooterPidController = new PIDController(0.0, 0.0, 0.0, shooterSpeedSource, shooterMotor);
+		
+		SmartDashboard.putNumber("PValue", PVALUE);
+		SmartDashboard.putNumber("IValue", IVALUE);
+		SmartDashboard.putNumber("DValue", DVALUE);
+		SmartDashboard.putNumber("HighSetting", SHOOTER_RPM);
+		
 	}
 
 	public void dispose() {
@@ -106,6 +114,7 @@ public class FuelManagement {
 	public void endShoot() {
 		if (shooter == SHOOTER_STATES.SHOOTING) {
 			shooterMotor.set(0);
+			shooterPidController.disable();
 			feederMotor.set(0);
 			indexerMotor.set(0);
 			shooter = SHOOTER_STATES.STOP;
@@ -122,8 +131,10 @@ public class FuelManagement {
 	public void intake() {
 		if (intaking != INTAKE_STATES.IN) {
 			intaking = INTAKE_STATES.IN;
+			Gear.getInstance().extendWrist();
 			intakeMotor.set(INTAKE_POWER);
-			feederMotor.set(-FEED_POWER);
+			if (shooter != SHOOTER_STATES.SHOOTING)
+				feederMotor.set(-FEED_POWER);
 			SmartDashboard.putBoolean("BallPickupMotor", true);
 		} else {
 			Util.consoleLog("Attempted intake while already intaking!");
@@ -132,8 +143,10 @@ public class FuelManagement {
 
 	public void stopIntake() {
 		if (intaking != INTAKE_STATES.STOP) {
+			Gear.getInstance().retractWrist();
 			intakeMotor.set(0);
-			feederMotor.set(0);
+			if (shooter != SHOOTER_STATES.SHOOTING)
+				feederMotor.set(0);
 			intaking = INTAKE_STATES.STOP;
 			SmartDashboard.putBoolean("BallPickupMotor", false);
 		} else {
@@ -155,7 +168,7 @@ public class FuelManagement {
 	}
 
 	public boolean getPreparedToShoot() {
-		return shooter == SHOOTER_STATES.PREPARED || shooter == SHOOTER_STATES.SHOOTING;
+		return shooter == SHOOTER_STATES.PREPARED;
 	}
 
 	/**
@@ -180,6 +193,7 @@ public class FuelManagement {
 		shooterPidController.setSetpoint(rpm / 60);		// setpoint is revolutions per second.
 		shooterPidController.setPercentTolerance(5);	// 5% error.
 		shooterPidController.setToleranceBuffer(4096);	// 4 seconds of averaging.
+		shooterPidController.setContinuous();
 		shooterSpeedSource.reset();
 		shooterPidController.enable();
 	}

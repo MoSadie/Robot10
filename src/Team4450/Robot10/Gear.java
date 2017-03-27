@@ -18,6 +18,8 @@ public class Gear {
 	enum ELEVATOR_STATES { UP, DOWN };
 	private ELEVATOR_STATES elevator_state;
 
+	enum WRIST_STATES {EXTEND, RETRACT};
+	private WRIST_STATES wrist_state;
 	static final double INTAKE_SPEED = 0.5;
 
 	private static Gear gear = null;
@@ -33,6 +35,7 @@ public class Gear {
 		intakeMotor = new CANTalon(7);
 		wristValve = new ValveDA(1,0);
 		elevatorValve = new ValveDA(6);
+		reset();
 	}
 
 	public void reset(){
@@ -40,6 +43,8 @@ public class Gear {
 		state = STATES.STOP;
 		elevatorValve.SetA();
 		elevator_state = ELEVATOR_STATES.UP;
+		wristValve.SetA();
+		wrist_state = WRIST_STATES.RETRACT;
 	}
 
 	public void dispose() {
@@ -49,7 +54,7 @@ public class Gear {
 	}
 	
 	void updateNetworkTables() {
-		SmartDashboard.putBoolean("GearPickupDown", elevator_state == ELEVATOR_STATES.DOWN);
+		SmartDashboard.putBoolean("GearPickupDown", (elevator_state == ELEVATOR_STATES.DOWN));
 		SmartDashboard.putBoolean("GearPickupMotor", (state == STATES.INTAKE || state == STATES.EJECT));
 	}
 	
@@ -97,7 +102,6 @@ public class Gear {
 				return;
 			case UP:
 				elevatorValve.SetB();
-				updateNetworkTables();
 				break;
 			}
 			break;
@@ -110,22 +114,33 @@ public class Gear {
 
 			case DOWN:
 				elevatorValve.SetA();
-				updateNetworkTables();
+				Util.consoleLog();
 				break;
 			}
 			break;
 		}
 		elevator_state = stateToSetTo;
+		updateNetworkTables();
 	}
 
 	public void extendWrist() {
-		wristValve.SetB();
-		startIntake();
+		if (wrist_state != WRIST_STATES.EXTEND) {
+			wristValve.SetB();
+			wrist_state = WRIST_STATES.EXTEND;
+			Util.consoleLog("Extended Wrist");
+		} else {
+			Util.consoleLog("Attempted to Extend wrist while aready Extened!");
+		}
 	}
 
 	public void retractWrist() {
-		wristValve.SetA();
-		stopIntake();
+		if (wrist_state != WRIST_STATES.RETRACT) {
+			wristValve.SetA();
+			wrist_state = WRIST_STATES.RETRACT;
+			Util.consoleLog("Retracted Wrist");
+		} else {
+			Util.consoleLog("Attempted to Retract wrist while aready Retracted!");
+		}
 	}
 	
 	public CANTalon getIntakeMotor() {
@@ -138,6 +153,10 @@ public class Gear {
 	
 	public ELEVATOR_STATES getElevatorState() {
 		return elevator_state;
+	}
+	
+	public WRIST_STATES getWristState() {
+		return wrist_state;
 	}
 }
 
@@ -157,6 +176,7 @@ class GearGrab extends Thread {
 	}
 
 	public void run() {
+		try {
 		finished = false;
 		Gear.getInstance().setElevator(ELEVATOR_STATES.DOWN);
 		Gear.getInstance().extendWrist();
@@ -171,8 +191,21 @@ class GearGrab extends Thread {
 
 			}
 		}
-		Gear.getInstance().stopIntake();
+		sleep(500);
 		Gear.getInstance().retractWrist();
 		Gear.getInstance().setElevator(ELEVATOR_STATES.UP);
+		sleep(1000);
+		Gear.getInstance().stopIntake();
+		} catch (InterruptedException e) {
+			Gear.getInstance().stopIntake();
+			Gear.getInstance().retractWrist();
+			Gear.getInstance().setElevator(ELEVATOR_STATES.UP);
+		}
+		catch (Exception e) {
+			e.printStackTrace(Util.logPrintStream);
+			Gear.getInstance().stopIntake();
+			Gear.getInstance().retractWrist();
+			Gear.getInstance().setElevator(ELEVATOR_STATES.UP);
+		}
 	}
 }

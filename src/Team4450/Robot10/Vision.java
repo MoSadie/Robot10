@@ -4,6 +4,7 @@ import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
 import Team4450.Lib.CameraFeed;
+import Team4450.Lib.Util;
 import Team4450.Robot10.VisionPipelines.PegPipeline;
 
 public class Vision {
@@ -28,8 +29,10 @@ public class Vision {
 	//Section 4: Constructor
 	
 	private Vision() {
+		Util.consoleLog("Vision inint start");
 		cameraFeed = CameraFeed.getInstance();
 		pipeline = new PegPipeline();
+		Util.consoleLog("Vision init end");
 		
 	}
 	

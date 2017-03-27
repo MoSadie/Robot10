@@ -18,11 +18,6 @@ class Teleop
 	private boolean				autoTarget = false;
 	public boolean				invertDrive = false;
 
-	// Wheel encoder is plugged into dio port 1 - orange=+5v blue=signal, dio port 2 black=gnd yellow=signal. 
-	private Encoder				encoder = new Encoder(1, 2, true, EncodingType.k4X);
-
-	// Encoder ribbon cable to dio ports: ribbon wire 2 = orange, 5 = yellow, 7 = blue, 10 = black
-
 	// Constructor.
 
 	Teleop(Robot robot)
@@ -42,7 +37,6 @@ class Teleop
 		if (rightStick != null) rightStick.dispose();
 		if (utilityStick != null) utilityStick.dispose();
 		if (launchPad != null) launchPad.dispose();
-		if (encoder != null) encoder.free();
 	}
 
 	void OperatorControl()
@@ -84,6 +78,7 @@ class Teleop
 
 		rightStick = new JoyStick(robot.rightStick, "RightStick", JoyStickButtonIDs.TOP_LEFT, this);
 		rightStick.AddButton(JoyStickButtonIDs.TRIGGER);
+		rightStick.AddButton(JoyStickButtonIDs.TOP_BACK);
 		rightStick.addJoyStickEventListener(new RightStickListener());
 		rightStick.Start();
 
@@ -95,7 +90,7 @@ class Teleop
 		utilityStick.addJoyStickEventListener(new UtilityStickListener());
 		utilityStick.Start();
 
-		// Tighten up dead zone for smoother turrent movement.
+		// Tighten up dead zone for smoother climber movement.
 		utilityStick.deadZone = .05;
 
 		// Set CAN Talon brake mode by rocker switch setting.
@@ -121,9 +116,9 @@ class Teleop
 
 			if (GearBox.getInstance().isPTO())
 			{
-				leftY = utilityStick.GetY();
+				leftY = climbLogCorrection(utilityStick.GetY());
 
-				rightY = 0;
+				rightY = stickLogCorrection(rightStick.GetY());
 			}
 			//else if (invertDrive) {
 			//	rightY = stickLogCorrection(-rightStick.GetY());	// fwd/back right
@@ -138,7 +133,6 @@ class Teleop
 			utilX = utilityStick.GetX();
 
 			LCD.printLine(4, "leftY=%.4f  rightY=%.4f utilX=%.4f", leftY, rightY, utilX);
-			LCD.printLine(5, "encoder=%d, shootEncoder=%d", encoder.get(), FuelManagement.getInstance().tlEncoder.get());
 			//LCD.printLine(6, "yaw=%.0f, total=%.0f, rate=%.3f", robot.navx.getYaw(), robot.navx.getTotalYaw(), robot.navx.getYawRate());
 
 			// Set wheel motors.
@@ -199,13 +193,15 @@ class Teleop
 
 	private double climbLogCorrection(double joystickValue)
 	{
-		double base = Math.pow(13.5, 1/3);
-
+		double origJoystickValue = joystickValue;
+		double base = 2.2239800905693155211653633767222;//Math.pow(13.5, (1/3));
+		
+			
 		if (joystickValue > 0)
 			joystickValue = baseLog(base, joystickValue + 1);
 		else if (joystickValue < 0)
 			joystickValue = -baseLog(base, -joystickValue + 1);
-
+		
 		return joystickValue;
 	}
 
@@ -256,7 +252,7 @@ class Teleop
 			switch(control.id)
 			{
 			case BUTTON_BLUE:
-				if (launchPadEvent.control.latchedState)
+				if (!GearBox.getInstance().isPTO())
 					ptoEnable();
 				else
 					ptoDisable();
@@ -264,7 +260,7 @@ class Teleop
 				break;
 
 			case BUTTON_RED:
-				if (control.latchedState)
+				if (Gear.getInstance().getWristState() == Gear.WRIST_STATES.RETRACT)
 					Gear.getInstance().extendWrist();
 				else
 					Gear.getInstance().retractWrist();
@@ -280,7 +276,7 @@ class Teleop
 
 
 			case BUTTON_RED_RIGHT:
-				if (control.latchedState)
+				if (Gear.getInstance().getWristState() == Gear.WRIST_STATES.RETRACT)
 					Gear.getInstance().extendWrist();
 				else
 					Gear.getInstance().retractWrist();
@@ -349,6 +345,11 @@ class Teleop
 				
 			case TRIGGER:
 				robot.cameraThread.ChangeCamera();
+				break;
+				
+			case TOP_BACK:
+				int angle = Vision.getInstance().getPegX();
+				Util.consoleLog("angle=%d", angle);
 				break;
 
 			default:
