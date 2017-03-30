@@ -193,7 +193,6 @@ class Teleop
 
 	private double climbLogCorrection(double joystickValue)
 	{
-		double origJoystickValue = joystickValue;
 		double base = 2.2239800905693155211653633767222;//Math.pow(13.5, (1/3));
 		
 			
@@ -348,7 +347,7 @@ class Teleop
 				break;
 				
 			case TOP_BACK:
-				int angle = Vision.getInstance().getPegX();
+				int angle = Vision.getInstance().getOutput().getPegX();
 				Util.consoleLog("angle=%d", angle);
 				break;
 

@@ -19,7 +19,7 @@ public class FuelManagement {
 	static double INTAKE_POWER = 0.80;
 	static double INDEX_POWER = 0.50;
 
-	public static double				SHOOTER_RPM = 3100;
+	public static double				SHOOTER_RPM = 3200;
 	public static double				PVALUE = .0025, IVALUE = .0025, DVALUE = .005;
 
 	// Touchless Encoder single channel on dio port 0.
@@ -46,7 +46,7 @@ public class FuelManagement {
 		if (Robot.IsClone) {
 			// Clone robot PID defaults.
 			SHOOTER_POWER = .45;
-			SHOOTER_RPM = 3000;
+			SHOOTER_RPM = 3200;
 
 			PVALUE = .002; 
 			IVALUE = .002;

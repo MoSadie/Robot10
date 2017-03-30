@@ -29,16 +29,14 @@ public class Vision {
 	//Section 4: Constructor
 	
 	private Vision() {
-		Util.consoleLog("Vision inint start");
 		cameraFeed = CameraFeed.getInstance();
 		pipeline = new PegPipeline();
-		Util.consoleLog("Vision init end");
 		
 	}
 	
 	//Section 5: Non-Static Methods
 	
-	public int getPegX() {
+	public VisionOutput getOutput() {
 		
 		//Process the latest image
 		pipeline.process(cameraFeed.getCurrentImage());
@@ -70,17 +68,32 @@ public class Vision {
 						int centerX2 = target2.x + (target2.width / 2);
 						
 						//Calculate the center x of those points and return that value
-						return (centerX1 + ((centerX1-centerX2)/2));
+						return new VisionOutput((centerX1 + ((centerX1-centerX2)/2)),Math.abs(centerX1)-centerX2);
 					}
 				}
 			}
 		}
-		return 9001;
+		return new VisionOutput();
 	}
 	
 	public static boolean sameWithError(Rect rect1, Rect rect2, double error) {
 		boolean width = Math.abs(rect1.width-rect2.width) <= error;
 		boolean height = Math.abs(rect1.height-rect2.height) <= error;
 		return width && height;
+	}
+	
+	public class VisionOutput {
+		int pegX = 9001;
+		int distance = 9001;
+		
+		public VisionOutput() {	};
+		
+		public VisionOutput(int pegX, int distance) {
+			this.pegX = distance;
+			this.distance = distance;
+		}
+		
+		public int getPegX() { return pegX; }
+		public int getDistance() { return distance; }
 	}
 }

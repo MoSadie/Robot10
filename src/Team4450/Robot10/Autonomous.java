@@ -3,6 +3,7 @@ package Team4450.Robot10;
 
 import Team4450.Lib.*;
 import Team4450.Robot10.Gear.ELEVATOR_STATES;
+import Team4450.Robot10.Vision.VisionOutput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
@@ -44,7 +45,7 @@ public class Autonomous
 		robot.navx.resetYaw();
 		
         // Wait to start motors so gyro will be zero before first movement.
-        Timer.delay(.50);
+        //Timer.delay(.50);
 
 		switch (program)
 		{
@@ -52,7 +53,7 @@ public class Autonomous
 				break;
 				
 			case 1:		// Drive forward to line and stop.
-				autoDrive(-.70, 9000, true);
+				autoDrive(.70, 9000, true);
 				
 				break;
 				
@@ -81,8 +82,25 @@ public class Autonomous
 				
 				break;
 				
-			case 7:		// TestDrive backward and stop.
-				autoDrive(.70, 9000, true);
+			case 7:		// Drive then shoot, left start.
+				autoShoot(true);
+				
+				break;
+
+			case 8:		// Drive then shoot, right start.
+				autoShoot(false);
+				
+				break;
+				
+			case 9:		// Place gear center start with vision.
+				placeGearCenter(5800, false);
+				
+				break;
+				
+			case 10:	// Test.
+				//autoDrive(-.50, 9000, true);
+				//autoDriveVision(-.40, 3000, true);
+				//autoShoot();
 				
 				break;
 		}
@@ -97,9 +115,9 @@ public class Autonomous
 		// Drive forward to peg and stop.
 		
 		if (!useVision)
-			autoDrive(-.60, encoderCounts, true);
+			autoDrive(.60, encoderCounts, true);
 		else
-			autoDriveVision(-.60, encoderCounts, true);
+			autoDriveVision(.60, encoderCounts, true);
 		
 		// Start gear pickup motor in reverse.
 		
@@ -125,22 +143,74 @@ public class Autonomous
 		// Drive forward to be on a 55 degree angle with side peg and stop.
 		
 		if (leftSide)
-			autoDrive(-.50, 5600, true);
+			autoDrive(.50, 5600, true);
 		else
-			autoDrive(-.50, 5600, true);
+			autoDrive(.50, 5600, true);
 		
 		// rotate as right or left 90 degrees.
 		
 		if (leftSide)
 			// Rotate right.
-			autoRotate(-.60, 55);
+			autoRotate(.50, 55);
 		else
 			// Rotate left
-			autoRotate(.60, 55);
+			autoRotate(-.50, 55);
+		
+		if (useVision) Timer.delay(.5);
 		
 		// Place gear.
 		
 		placeGearCenter(5300, useVision);
+		
+		//if (leftSide)
+		//{
+		//	autoRotate(.60, 20);
+		//
+		//	FuelManagement.getInstance().prepareToShoot();
+		//
+		//	autoDrive(.60, 6200, true);
+		//
+		//	FuelManagement.getInstance().shoot();
+		//}
+	}
+	
+	private void autoShoot(boolean left)
+	{
+		double power = .60;
+		int		encoderCountsFwd = 6200, encoderCountsBack = 3400, angle = 25;
+		
+		Util.consoleLog("pwr=%f  encf=%d  encb=%d  angle=%d", power, encoderCountsFwd, encoderCountsBack, angle);
+	
+		// Drive forward to cross base line.
+		
+		autoDrive(power, encoderCountsFwd, true);
+		
+		// Turn to point at boiler.
+		
+		if (left)
+			autoRotate(power, angle);	
+		else
+			autoRotate(-power, angle);
+		
+		// Back up to shooting location;
+		
+		autoDrive(-power, encoderCountsBack, true);
+		
+		// Shoot balls.
+		
+		Gear.getInstance().setElevator(Gear.ELEVATOR_STATES.DOWN);
+		
+		FuelManagement.getInstance().prepareToShoot();
+		
+		Timer.delay(3);
+		
+		FuelManagement.getInstance().intake();
+		
+		FuelManagement.getInstance().shoot();
+		
+		// Run until auto is over.
+		
+		while (robot.isEnabled()) Timer.delay(1);
 	}
 	
 	// Auto drive in set direction and power for specified encoder count. Stops
@@ -158,7 +228,7 @@ public class Autonomous
 		GearBox.getInstance().getEncoder().reset();
 		robot.navx.resetYaw();
 		
-		while (robot.isAutonomous() && Math.abs(GearBox.getInstance().getEncoder().get()) < encoderCounts) 
+		while (robot.isEnabled() && robot.isAutonomous() && Math.abs(GearBox.getInstance().getEncoder().get()) < encoderCounts) 
 		{
 			LCD.printLine(3, "encoder=%d", GearBox.getInstance().getEncoder().get());
 			
@@ -203,7 +273,7 @@ public class Autonomous
 		
 		robot.robotDrive.tankDrive(power, -power);
 
-		while (robot.isAutonomous() && Math.abs((int) robot.navx.getYaw()) < angle) {Timer.delay(.020);} 
+		while (robot.isEnabled() && robot.isAutonomous() && Math.abs((int) robot.navx.getYaw()) < angle) {Timer.delay(.020);} 
 		
 		robot.robotDrive.tankDrive(0, 0);
 	}
@@ -214,7 +284,9 @@ public class Autonomous
 	private void autoDriveVision(double power, int encoderCounts, boolean enableBrakes)
 	{
 		int		angle;
-		double	gain = .03;
+		int prevDistance = 0;
+		double	gain = .002, delay = .25, power2 = power;
+		boolean driving = true;
 		
 		Util.consoleLog("pwr=%f, count=%d, brakes=%b", power, encoderCounts, enableBrakes);
 
@@ -222,39 +294,83 @@ public class Autonomous
 
 		GearBox.getInstance().getEncoder().reset();
 		
-		while (robot.isAutonomous() && Math.abs(GearBox.getInstance().getEncoder().get()) < encoderCounts) 
+		robot.monitorDistanceThread.setDelay(delay);
+		
+		while (driving && robot.isEnabled() && robot.isAutonomous() && Math.abs(GearBox.getInstance().getEncoder().get()) < encoderCounts) 
 		{
 			LCD.printLine(3, "encoder=%d", GearBox.getInstance().getEncoder().get());
 			
 			// Angle is negative if robot veering left, positive if veering right when going forward.
 			// It is opposite when going backward. Note that for this robot, - power means forward and
 			// + power means backward.
-			int pegX = Vision.getInstance().getPegX();
-			angle = (CameraFeed.imageWidth/2) + Vision.getInstance().getPegX();
+			VisionOutput output = Vision.getInstance().getOutput();
+			int pegX = output.getPegX();
+			int distance = output.getDistance();
+			angle = (CameraFeed.imageWidth/2) + Vision.getInstance().getOutput().getPegX();
 			SmartDashboard.putBoolean("TargetLocked", true);
 			if (pegX == 9001) {
 				SmartDashboard.putBoolean("TargetLocked", false);
 				angle = 0;
 			}
+			if (distance != 9001) {
+				if (distance > 150 || distance <= prevDistance) {
+					driving = false;
+					Util.consoleLog("End Auto Drive reason Distance > 150 or < prevDistance");
+				} else {
+					driving = distance < 205 && robot.isEnabled();
+				}
+				
+				if (!driving) {
+					Util.consoleLog("Stopped Driving. Distance: %d", distance);
+					continue;
+				}
+			} else {
+				driving = robot.isEnabled() && Math.abs(GearBox.getInstance().getEncoder().get()) < encoderCounts;
+				
+				if (!driving) {
+					Util.consoleLog("Stopped Driving. Encoder: %d", Math.abs(GearBox.getInstance().getEncoder().get()));
+				}
+			}
 			
-			LCD.printLine(5, "angle=%d", (int) angle);
+			LCD.printLine(5, "angle=%d distance=%d", angle, distance);
+			
+			if (distance != 0 && distance < 100)
+			{
+				delay = .25;
+				power2 = power;
+			}
+			else if (distance != 0)
+			{
+				delay = .10;
+				gain = .005;
+				power2 = power / 2;
+			}
 			
 			// Invert angle for backwards.
 			
-			if (power > 0) angle = -angle;
+			if (power < 0) angle = -angle;
 			
 			//Util.consoleLog("angle=%d", angle);
 			
-			// Note we invert sign on the angle because we want the robot to turn in the opposite
-			// direction than it is currently going to correct it. So a + angle says robot is veering
-			// right so we set the turn value to - because - is a turn left which corrects our right
-			// drift.
+			prevDistance = distance;
 			
-			robot.robotDrive.drive(power, -angle * gain);
+			double pegOffset = (pegX-(CameraFeed.imageWidth/2)) * gain;
 			
-			Timer.delay(.020);
+			// Offset is + if robot veering right, so we invert to - because - curve is to the left.
+			// Offset is - if robot veering left, so we invert to + because + curve is to the right.
+
+			if (pegOffset < -1)
+				pegOffset = -1;
+			else if (pegOffset > 1)
+				pegOffset = 1;
+			
+			robot.robotDrive.drive(power2, -pegOffset);
+			
+			Timer.delay(delay);
 		}
 
-		robot.robotDrive.tankDrive(0, 0, true);				
+		robot.robotDrive.tankDrive(0, 0, true);	
+		
+		robot.monitorDistanceThread.setDelay(1.0);
 	}
 }
