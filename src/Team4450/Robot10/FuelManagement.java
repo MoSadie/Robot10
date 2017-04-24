@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class FuelManagement {
@@ -15,11 +16,11 @@ public class FuelManagement {
 	Talon shooterMotor, feederMotor, indexerMotor;
 	Spark intakeMotor;
 	static double SHOOTER_POWER = .45;
-	static double FEED_POWER = 0.30;
+	static double FEED_POWER = 0.35;
 	static double INTAKE_POWER = 0.80;
-	static double INDEX_POWER = 0.50;
+	static double INDEX_POWER = 0.80;
 
-	public static double				SHOOTER_RPM = 3200;
+	public static double				SHOOTER_RPM = 3140;//3200;
 	public static double				PVALUE = .0025, IVALUE = .0025, DVALUE = .005;
 
 	// Touchless Encoder single channel on dio port 0.
@@ -43,10 +44,11 @@ public class FuelManagement {
 	private static FuelManagement fuelManagement;
 
 	private FuelManagement() {
+		Util.consoleLog("FuelManagement init");
 		if (Robot.IsClone) {
 			// Clone robot PID defaults.
 			SHOOTER_POWER = .45;
-			SHOOTER_RPM = 3200;
+			//SHOOTER_RPM = 3200;
 
 			PVALUE = .002; 
 			IVALUE = .002;
@@ -72,6 +74,7 @@ public class FuelManagement {
 		SmartDashboard.putNumber("DValue", DVALUE);
 		SmartDashboard.putNumber("HighSetting", SHOOTER_RPM);
 		
+		Util.consoleLog("FuelManagement init end");
 	}
 
 	public void dispose() {
@@ -80,6 +83,10 @@ public class FuelManagement {
 		if (feederMotor != null) feederMotor.free();
 		if (indexerMotor != null) indexerMotor.free();
 		if (tlEncoder != null) tlEncoder.free();
+	}
+	
+	public void reset() {
+		if (shooterPidController.isEnabled()) shooterPidController.disable();
 	}
 
 	public void prepareToShoot() {
@@ -105,6 +112,7 @@ public class FuelManagement {
 			feederMotor.set(FEED_POWER);
 			indexerMotor.set(INDEX_POWER);
 			SmartDashboard.putBoolean("Feeder", true);
+			Util.consoleLog("Shooting fuel");
 		}
 		else {
 			Util.consoleLog("Attempted to shoot while not prepared!");
@@ -113,16 +121,17 @@ public class FuelManagement {
 
 	public void endShoot() {
 		if (shooter == SHOOTER_STATES.SHOOTING) {
-			shooterMotor.set(0);
 			shooterPidController.disable();
 			feederMotor.set(0);
 			indexerMotor.set(0);
 			shooter = SHOOTER_STATES.STOP;
 			SmartDashboard.putBoolean("ShooterMotor", false);
 			SmartDashboard.putBoolean("Feeder", false);
+			Util.consoleLog("Ended shooting");
 		} else if (shooter == SHOOTER_STATES.PREPARED) {
-			shooterMotor.set(0);
+			shooterPidController.disable();
 			shooter = SHOOTER_STATES.STOP;
+			Util.consoleLog("Unprepared shooting");
 		} else {
 			Util.consoleLog("Attempted endShoot while not shooting!");
 		}
@@ -132,10 +141,12 @@ public class FuelManagement {
 		if (intaking != INTAKE_STATES.IN) {
 			intaking = INTAKE_STATES.IN;
 			Gear.getInstance().extendWrist();
+			Timer.delay(0.1);
 			intakeMotor.set(INTAKE_POWER);
-			if (shooter != SHOOTER_STATES.SHOOTING)
-				feederMotor.set(-FEED_POWER);
+			//if (shooter != SHOOTER_STATES.SHOOTING)
+			//	feederMotor.set(-FEED_POWER);
 			SmartDashboard.putBoolean("BallPickupMotor", true);
+			Util.consoleLog("Intaking fuel");
 		} else {
 			Util.consoleLog("Attempted intake while already intaking!");
 		}
@@ -149,6 +160,7 @@ public class FuelManagement {
 				feederMotor.set(0);
 			intaking = INTAKE_STATES.STOP;
 			SmartDashboard.putBoolean("BallPickupMotor", false);
+			Util.consoleLog("Stop intaking fuel");
 		} else {
 			Util.consoleLog("Attempted stopIntake while not intaking!");
 		}
@@ -158,6 +170,7 @@ public class FuelManagement {
 		if (shooter != SHOOTER_STATES.REVERSE) {
 			feederMotor.set(-FEED_POWER);
 			shooter = SHOOTER_STATES.REVERSE;
+			Util.consoleLog("Reverse feeder motor");
 		} else {
 			Util.consoleLog("Attempted reversing feeder while already doing that");
 		}

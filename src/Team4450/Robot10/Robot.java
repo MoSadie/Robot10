@@ -29,7 +29,7 @@ import com.ctre.CANTalon.*;
 
 public class Robot extends SampleRobot 
 {
-	static final String  	PROGRAM_NAME = "SWF10-03.25.17-01";
+	static final String  	PROGRAM_NAME = "SWF10-04.20.17-1";
 	
 	static boolean IsClone = false;
 
@@ -177,8 +177,8 @@ public class Robot extends SampleRobot
 
 			// Start thread to monitor distance sensor. Uses Analog port 1
 
-			monitorDistanceThread = MonitorDistanceMBX.getInstance(this);
-			monitorDistanceThread.start();
+			//monitorDistanceThread = MonitorDistanceMBX.getInstance(this);
+			//monitorDistanceThread.start();
 
 			Util.consoleLog("end");
 		}

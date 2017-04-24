@@ -20,7 +20,10 @@ public class Gear {
 
 	enum WRIST_STATES {EXTEND, RETRACT};
 	private WRIST_STATES wrist_state;
+	
 	static final double INTAKE_SPEED = 0.5;
+	
+	public boolean isAutoGear = false;
 
 	private static Gear gear = null;
 	public static Gear getInstance() {
@@ -39,6 +42,7 @@ public class Gear {
 	}
 
 	public void reset(){
+		Util.consoleLog("Gear reset");
 		intakeMotor.set(0);
 		state = STATES.STOP;
 		elevatorValve.SetA();
@@ -68,10 +72,13 @@ public class Gear {
 	}
 	
 	public void startAutoIntake() {
-		GearGrab.getInstance().run();
+		Util.consoleLog("Starting Auto Intake of Gear");
+		GearGrab gearGrab = GearGrab.getInstance();
+		gearGrab.start();
 	}
 	
 	public void killAutoIntake() {
+		Util.consoleLog("Killing Auto Intake of Gear.");
 		GearGrab.getInstance().finished = true;
 	}
 
@@ -102,6 +109,7 @@ public class Gear {
 				return;
 			case UP:
 				elevatorValve.SetB();
+				Util.consoleLog("Changing state from Up to Down!");
 				break;
 			}
 			break;
@@ -114,7 +122,7 @@ public class Gear {
 
 			case DOWN:
 				elevatorValve.SetA();
-				Util.consoleLog();
+				Util.consoleLog("Changing state from Down to Up!");
 				break;
 			}
 			break;
@@ -162,7 +170,7 @@ public class Gear {
 
 class GearGrab extends Thread {
 	private static final double TRIGGER_CURRENT = 10.1;
-	boolean finished = false;
+	public boolean finished = false;
 	
 	private static GearGrab gearGrab = null;
 	public static GearGrab getInstance() {
@@ -171,17 +179,27 @@ class GearGrab extends Thread {
 		return gearGrab;
 	}
 	
-	GearGrab() {
+	private GearGrab() {
 		setName("Grab Gear");
+	}
+	
+	public static void dispose() {
+		if (gearGrab.isInterrupted() == false) {
+			gearGrab.interrupt();
+		}
+		gearGrab = null;
 	}
 
 	public void run() {
+		Util.consoleLog("Auto pickup start");
+		Gear.getInstance().isAutoGear = true;
 		try {
 		finished = false;
 		Gear.getInstance().setElevator(ELEVATOR_STATES.DOWN);
 		Gear.getInstance().extendWrist();
 		Gear.getInstance().startIntake();
 		while (!isInterrupted() && !finished) {
+			//Util.consoleLog("Current: " + Gear.getInstance().getIntakeMotor().getOutputCurrent() + " Finished: " + finished);
 			if (Gear.getInstance().getIntakeMotor().getOutputCurrent() >= TRIGGER_CURRENT) {
 				finished = true;
 			}
@@ -207,5 +225,8 @@ class GearGrab extends Thread {
 			Gear.getInstance().retractWrist();
 			Gear.getInstance().setElevator(ELEVATOR_STATES.UP);
 		}
+		Gear.getInstance().isAutoGear = false;
+		Util.consoleLog("Auto pickup end");
+		GearGrab.dispose();
 	}
 }

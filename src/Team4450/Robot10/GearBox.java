@@ -12,7 +12,7 @@ public class GearBox {
 	
 	private ValveDA valveOuter, valvePTO, valveCenter;
 	
-	private Encoder encoder = new Encoder(1,2,true, EncodingType.k4X);
+	private Encoder encoder = new Encoder(3,4,true, EncodingType.k4X);
 	
 	public enum STATES { HIGH , LOW , PTO, NETURAL };
 	private STATES currentState;

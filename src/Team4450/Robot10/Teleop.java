@@ -17,6 +17,7 @@ class Teleop
 	public  LaunchPad			launchPad;
 	private boolean				autoTarget = false;
 	public boolean				invertDrive = false;
+	public boolean				oneStickDriving = false;
 
 	// Constructor.
 
@@ -32,7 +33,7 @@ class Teleop
 	void dispose()
 	{
 		Util.consoleLog();
-
+		
 		if (leftStick != null) leftStick.dispose();
 		if (rightStick != null) rightStick.dispose();
 		if (utilityStick != null) utilityStick.dispose();
@@ -54,6 +55,8 @@ class Teleop
 		// Initial setting of air valves.
 
 		GearBox.getInstance().reset();
+		Gear.getInstance().reset();
+		FuelManagement.getInstance().reset();
 
 		// Configure LaunchPad and Joystick event handlers.
 
@@ -137,8 +140,12 @@ class Teleop
 
 			// Set wheel motors.
 			// Do not feed JS input to robotDrive if we are controlling the motors in automatic functions.
-
-			if (!autoTarget) robot.robotDrive.tankDrive(leftY, rightY);
+			
+			if (!autoTarget) 
+				if (!oneStickDriving) 
+					robot.robotDrive.tankDrive(leftY, rightY);
+				else
+					robot.robotDrive.drive(rightStick.GetY(), rightStick.GetX());
 
 			// End of driving loop.
 
@@ -199,7 +206,7 @@ class Teleop
 		if (joystickValue > 0)
 			joystickValue = baseLog(base, joystickValue + 1);
 		else if (joystickValue < 0)
-			joystickValue = -baseLog(base, -joystickValue + 1);
+			joystickValue = baseLog(base, -joystickValue + 1);
 		
 		return joystickValue;
 	}
@@ -282,7 +289,8 @@ class Teleop
 				break;
 
 			case BUTTON_YELLOW:
-				if (control.latchedState)
+				Util.consoleLog("isAutoGear: " + Gear.getInstance().isAutoGear);
+				if (!Gear.getInstance().isAutoGear)
 					Gear.getInstance().startAutoIntake();
 				else
 					Gear.getInstance().killAutoIntake();
@@ -343,7 +351,7 @@ class Teleop
 				break;
 				
 			case TRIGGER:
-				robot.cameraThread.ChangeCamera();
+				oneStickDriving = !oneStickDriving;
 				break;
 				
 			case TOP_BACK:

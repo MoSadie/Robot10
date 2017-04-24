@@ -53,7 +53,7 @@ public class Autonomous
 				break;
 				
 			case 1:		// Drive forward to line and stop.
-				autoDrive(.70, 9000, true);
+				autoDrive(-.70, 9000, true);
 				
 				break;
 				
@@ -93,7 +93,7 @@ public class Autonomous
 				break;
 				
 			case 9:		// Place gear center start with vision.
-				placeGearCenter(5800, false);
+				placeGearCenter(5800, true);
 				
 				break;
 				
@@ -115,9 +115,9 @@ public class Autonomous
 		// Drive forward to peg and stop.
 		
 		if (!useVision)
-			autoDrive(.60, encoderCounts, true);
+			autoDrive(-.60, encoderCounts, true);
 		else
-			autoDriveVision(.60, encoderCounts, true);
+			autoDriveVision(-.50, encoderCounts, true);
 		
 		// Start gear pickup motor in reverse.
 		
@@ -131,7 +131,7 @@ public class Autonomous
 		
 		// Drive backward a bit.
 
-		autoDrive(.50, 1000, true);
+		autoDrive(.30, 1000, true);
 		
 		gear.stopIntake();
 	}
@@ -143,18 +143,18 @@ public class Autonomous
 		// Drive forward to be on a 55 degree angle with side peg and stop.
 		
 		if (leftSide)
-			autoDrive(.50, 5600, true);
+			autoDrive(-.50, 5600, true);
 		else
-			autoDrive(.50, 5600, true);
+			autoDrive(-.50, 5600, true);
 		
 		// rotate as right or left 90 degrees.
 		
 		if (leftSide)
 			// Rotate right.
-			autoRotate(.50, 55);
+			autoRotate(-.60, 55);
 		else
 			// Rotate left
-			autoRotate(-.50, 55);
+			autoRotate(.60, 55);
 		
 		if (useVision) Timer.delay(.5);
 		
@@ -176,8 +176,8 @@ public class Autonomous
 	
 	private void autoShoot(boolean left)
 	{
-		double power = .60;
-		int		encoderCountsFwd = 6200, encoderCountsBack = 3400, angle = 25;
+		double power = -.60;
+		int		encoderCountsFwd = 6200, encoderCountsBack = 3400, angle = 26;
 		
 		Util.consoleLog("pwr=%f  encf=%d  encb=%d  angle=%d", power, encoderCountsFwd, encoderCountsBack, angle);
 	
@@ -285,7 +285,7 @@ public class Autonomous
 	{
 		int		angle;
 		int prevDistance = 0;
-		double	gain = .002, delay = .25, power2 = power;
+		double	gain = .002, delay = .1, power2 = power;
 		boolean driving = true;
 		
 		Util.consoleLog("pwr=%f, count=%d, brakes=%b", power, encoderCounts, enableBrakes);
@@ -294,16 +294,17 @@ public class Autonomous
 
 		GearBox.getInstance().getEncoder().reset();
 		
-		robot.monitorDistanceThread.setDelay(delay);
+		//robot.monitorDistanceThread.setDelay(delay);
 		
 		while (driving && robot.isEnabled() && robot.isAutonomous() && Math.abs(GearBox.getInstance().getEncoder().get()) < encoderCounts) 
 		{
 			LCD.printLine(3, "encoder=%d", GearBox.getInstance().getEncoder().get());
-			
+			Util.consoleLog("encoder=%d", GearBox.getInstance().getEncoder().get());
 			// Angle is negative if robot veering left, positive if veering right when going forward.
 			// It is opposite when going backward. Note that for this robot, - power means forward and
 			// + power means backward.
 			VisionOutput output = Vision.getInstance().getOutput();
+			Util.consoleLog(output.toString());
 			int pegX = output.getPegX();
 			int distance = output.getDistance();
 			angle = (CameraFeed.imageWidth/2) + Vision.getInstance().getOutput().getPegX();
@@ -313,11 +314,11 @@ public class Autonomous
 				angle = 0;
 			}
 			if (distance != 9001) {
-				if (distance > 150 || distance <= prevDistance) {
+				if (distance > 150 || distance < prevDistance) {
 					driving = false;
-					Util.consoleLog("End Auto Drive reason Distance > 150 or < prevDistance");
+					Util.consoleLog("End Auto Drive reason Distance(" + distance + ") > 150 or < prevDistance(" + prevDistance + ")");
 				} else {
-					driving = distance < 205 && robot.isEnabled();
+					driving = distance < 200 && robot.isEnabled();
 				}
 				
 				if (!driving) {
@@ -336,7 +337,7 @@ public class Autonomous
 			
 			if (distance != 0 && distance < 100)
 			{
-				delay = .25;
+				delay = .10;
 				power2 = power;
 			}
 			else if (distance != 0)
@@ -352,7 +353,7 @@ public class Autonomous
 			
 			//Util.consoleLog("angle=%d", angle);
 			
-			prevDistance = distance;
+			if (distance != 9001) prevDistance = distance;
 			
 			double pegOffset = (pegX-(CameraFeed.imageWidth/2)) * gain;
 			
@@ -364,13 +365,13 @@ public class Autonomous
 			else if (pegOffset > 1)
 				pegOffset = 1;
 			
-			robot.robotDrive.drive(power2, -pegOffset);
+			robot.robotDrive.drive(power2, -pegOffset);//TODO Try unInverting pegOffset
 			
 			Timer.delay(delay);
 		}
 
 		robot.robotDrive.tankDrive(0, 0, true);	
 		
-		robot.monitorDistanceThread.setDelay(1.0);
+		//robot.monitorDistanceThread.setDelay(1.0);
 	}
 }
