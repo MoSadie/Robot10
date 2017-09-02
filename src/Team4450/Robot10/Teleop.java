@@ -8,7 +8,9 @@ import Team4450.Lib.JoyStick.*;
 import Team4450.Lib.LaunchPad.*;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.AnalogInput;
 
 class Teleop
 {
@@ -19,6 +21,9 @@ class Teleop
 	public boolean				invertDrive = false;
 	public boolean				oneStickDriving = false;
 
+	//Constuctor for test
+	AnalogInput psiInput = new AnalogInput(0);
+	
 	// Constructor.
 
 	Teleop(Robot robot)
@@ -38,6 +43,7 @@ class Teleop
 		if (rightStick != null) rightStick.dispose();
 		if (utilityStick != null) utilityStick.dispose();
 		if (launchPad != null) launchPad.dispose();
+		if (psiInput != null) psiInput.free();
 	}
 
 	void OperatorControl()
@@ -148,7 +154,12 @@ class Teleop
 					robot.robotDrive.drive(rightStick.GetY(), rightStick.GetX());
 
 			// End of driving loop.
-
+			
+			//Test of psi sensor
+			final double Vn = 4.7058823529411764705882352941176;
+			SmartDashboard.putNumber("AirPressure", (250*(psiInput.getVoltage()/Vn)-25));
+			LCD.printLine(6, "PSI: %f Volt: %f", (250*(psiInput.getVoltage()/Vn)-25),psiInput.getVoltage());
+			
 			Timer.delay(.020);	// wait 20ms for update from driver station.
 		}
 
